@@ -6,6 +6,8 @@
 /.idea/workspace.xml
 /.idea/libraries
 /.idea/tasks.xml
+/.idea/misc.xml
+/.idea/gradle.xml
 
 # Generated files
 bin/
