@@ -5,7 +5,18 @@
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="android:divider">@color/divider</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <!--<item name="textColorPrimary">@color/textColorPrimary</item>-->
+        <!--<item name="textColorSecondary">@color/textColorSecondary</item>-->
+        <item name="android:icon">@color/icons</item>
+        <item name="android:textViewStyle">@style/AppTheme.Widget.TextView</item>
+    </style>
+
+    <style name="AppTheme.Widget"/>
+
+    <style name="AppTheme.Widget.TextView" parent="android:Widget.Holo.Light.TextView">
+        <item name="fontPath">fonts/Philosopher-Regular.ttf</item>
     </style>
 
     <style name="AppTheme.NoActionBar">

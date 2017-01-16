@@ -1,8 +1,11 @@
 package edu.rosehulman.wangf.fengy2.rosuber;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -13,8 +16,16 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import edu.rosehulman.wangf.fengy2.rosuber.fragments.AboutFragment;
+import edu.rosehulman.wangf.fengy2.rosuber.fragments.HomePageFragment;
+import edu.rosehulman.wangf.fengy2.rosuber.fragments.ProfileFragment;
+import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
+import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
+
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
+
+    FloatingActionButton mFab;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,9 +33,17 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        //custom font supports
+        CalligraphyConfig.initDefault(new CalligraphyConfig.Builder()
+                .setDefaultFontPath("fonts/Philosopher-Regular.ttf")
+                .setFontAttrId(R.attr.fontPath)
+                .build()
+        );
+
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
+        mFab = fab;
+        mFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
@@ -40,6 +59,19 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        if(savedInstanceState == null){
+            if(savedInstanceState == null) {
+                FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+                ft.replace(R.id.fragment_container, new HomePageFragment());
+                ft.commit();
+            }
+        }
+    }
+
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        super.attachBaseContext(CalligraphyContextWrapper.wrap(newBase));
     }
 
     @Override
@@ -78,20 +110,38 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
-        int id = item.getItemId();
+        Fragment switchTo = null;
+        switch (item.getItemId()){
+            case R.id.nav_profile:
+                switchTo = new ProfileFragment();
+                mFab.setVisibility(View.GONE);
+                break;
+            case R.id.nav_home:
+                switchTo = new HomePageFragment();
+                mFab.setVisibility(View.VISIBLE);
+                break;
+            case R.id.nav_find_trips:
+                mFab.setVisibility(View.VISIBLE);
+                break;
+            case R.id.nav_trip_history:
+                mFab.setVisibility(View.VISIBLE);
+                break;
+            case R.id.nav_about:
+                switchTo = new AboutFragment();
+                mFab.setVisibility(View.GONE);
+                break;
+            case R.id.nav_settings:
+                break;
 
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
+        }
 
-        } else if (id == R.id.nav_slideshow) {
-
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
+        if(switchTo != null) {
+            FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+            ft.replace(R.id.fragment_container, switchTo);
+            for(int i =0; i<getSupportFragmentManager().getBackStackEntryCount();i++){
+                getSupportFragmentManager().popBackStackImmediate();
+            }
+            ft.commit();
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

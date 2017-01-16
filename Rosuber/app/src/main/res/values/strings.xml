@@ -5,4 +5,13 @@
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
     <string name="action_settings">Settings</string>
+    <string name="nav_trip_title">My Trips</string>
+    <string name="nav_find_trips_title">Find Trips</string>
+    <string name="nav_profile_title">Profile</string>
+    <string name="nav_home_title">Home</string>
+    <string name="name_text_default">Your Name</string>
+    <string name="contact_info_text_default">Contact Info</string>
+    <string name="nav_about_title">About</string>
+    <string name="nav_settings_title">Settings</string>
+    <string name="homepage_title">Recent Trip</string>
 </resources>
