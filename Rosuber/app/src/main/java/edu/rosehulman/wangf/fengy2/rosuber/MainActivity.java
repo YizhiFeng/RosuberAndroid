@@ -19,11 +19,13 @@ import android.view.MenuItem;
 import edu.rosehulman.wangf.fengy2.rosuber.fragments.AboutFragment;
 import edu.rosehulman.wangf.fengy2.rosuber.fragments.HomePageFragment;
 import edu.rosehulman.wangf.fengy2.rosuber.fragments.ProfileFragment;
+import edu.rosehulman.wangf.fengy2.rosuber.fragments.TripDetailFragment;
+import edu.rosehulman.wangf.fengy2.rosuber.fragments.TripListFragment;
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener, TripListFragment.TripListCallback {
 
     FloatingActionButton mFab;
 
@@ -122,6 +124,7 @@ public class MainActivity extends AppCompatActivity
                 break;
             case R.id.nav_find_trips:
                 mFab.setVisibility(View.VISIBLE);
+                switchTo = new TripListFragment();
                 break;
             case R.id.nav_trip_history:
                 mFab.setVisibility(View.VISIBLE);
@@ -148,4 +151,13 @@ public class MainActivity extends AppCompatActivity
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
+
+    @Override
+    public void onTripSelected(Trip trip) {
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        ft.replace(R.id.fragment_container, TripDetailFragment.newInstance(trip));
+        ft.addToBackStack("detail");
+        ft.commit();
+    }
+
 }
