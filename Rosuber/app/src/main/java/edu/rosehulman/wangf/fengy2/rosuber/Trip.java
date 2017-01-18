@@ -3,11 +3,20 @@ package edu.rosehulman.wangf.fengy2.rosuber;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.util.ArrayList;
+
 /**
  * Created by wangf on 1/16/2017.
  */
 public class Trip implements Parcelable{
 
+    private String origin;
+    private String destination;
+    private String driverKey;
+//    private ArrayList? passengerKeys
+    private String time;
+    private long price;
+    private long capacity;
 
     public Trip(){
 
