@@ -65,4 +65,15 @@ public class TripListAdapter extends RecyclerView.Adapter<TripListAdapter.ViewHo
             mDetailButton = (ImageButton) itemView.findViewById(R.id.to_trip_detail_button);
         }
     }
+
+
+    public void addTrip(Trip trip){
+        mTrips.add(trip);
+        notifyDataSetChanged();
+    }
+
+    public void removeTrip(int pos){
+        mTrips.remove(pos);
+        notifyDataSetChanged();
+    }
 }

@@ -14,4 +14,18 @@
     <string name="nav_about_title">About</string>
     <string name="nav_settings_title">Settings</string>
     <string name="homepage_title">Recent Trip</string>
+
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="add_a_trip">ADD A TRIP</string>
+    <string name="i_am_a_driver">I AM A DRIVER</string>
+    <string name="i_am_a_passenger">I AM A PASSENGER</string>
+    <string name="from">From</string>
+    <string name="from_hint">I want to be picked up at</string>
+    <string name="to">To</string>
+    <string name="to_hint">I am going to</string>
+    <string name="select_a_date">Select A Date</string>
+    <string name="select_a_time">Select A Time</string>
+    <string name="capacity">Capacity (Number of passengers)</string>
+    <string name="suggested_price">Suggested Price Per Passenger ($)</string>
+    <string name="price_hint">e.g. 20</string>
 </resources>

@@ -1,11 +1,15 @@
 package edu.rosehulman.wangf.fengy2.rosuber;
 
+import android.app.DatePickerDialog;
+import android.app.TimePickerDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.AlertDialog;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -15,6 +19,19 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.DatePicker;
+import android.widget.EditText;
+import android.widget.SeekBar;
+import android.widget.Switch;
+import android.widget.TextView;
+import android.widget.TimePicker;
+import android.widget.ToggleButton;
+
+import java.nio.channels.SelectionKey;
+import java.text.DecimalFormat;
+import java.util.Calendar;
 
 import edu.rosehulman.wangf.fengy2.rosuber.fragments.AboutFragment;
 import edu.rosehulman.wangf.fengy2.rosuber.fragments.HomePageFragment;
@@ -48,8 +65,7 @@ public class MainActivity extends AppCompatActivity
         mFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                addEditTripDialog(false);
             }
         });
 
@@ -62,13 +78,92 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        if(savedInstanceState == null){
-            if(savedInstanceState == null) {
-                FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-                ft.replace(R.id.fragment_container, new HomePageFragment());
-                ft.commit();
-            }
+        if (savedInstanceState == null) {
+            FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+            ft.replace(R.id.fragment_container, new HomePageFragment());
+            ft.commit();
+
         }
+    }
+
+    public void addEditTripDialog(boolean isEditing) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        View view = getLayoutInflater().inflate(R.layout.dialog_add, null);
+        builder.setView(view);
+        builder.setTitle(R.string.add_a_trip);
+//        ToggleButton isDriverTButton = (ToggleButton) view.findViewById(R.id.toggleButton);
+        final Switch isDriverSwitch = (Switch)view.findViewById(R.id.isDriverSwitch);
+        final TextView isDriverTextView = (TextView)view.findViewById(R.id.isDriverTextView);
+        EditText originEditText = (EditText) view.findViewById(R.id.orginEditText);
+        EditText destEditText = (EditText) view.findViewById(R.id.destEditText);
+        Button dateButton = (Button) view.findViewById(R.id.dateButton);
+        final TextView dateTextView = (TextView) view.findViewById(R.id.dateTextView);
+        Button timeButton = (Button) view.findViewById(R.id.timeButton);
+        final TextView timeTextView = (TextView) view.findViewById(R.id.timeTextView);
+//        SeekBar numPassengerSBar = (SeekBar) view.findViewById(R.id.seek_bar);
+        EditText priceEditText = (EditText) view.findViewById(R.id.priceEditText);
+
+        isDriverSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView,
+                                         boolean isChecked) {
+                if (isChecked) {
+                    isDriverTextView.setText(R.string.i_am_a_driver);
+                } else {
+                    isDriverTextView.setText(R.string.i_am_a_passenger);
+                }
+            }
+        });
+
+        dateButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Calendar mcurrentDate = Calendar.getInstance();
+                int mYear = mcurrentDate.get(Calendar.YEAR);
+                int mMonth = mcurrentDate.get(Calendar.MONTH);
+                int mDay = mcurrentDate.get(Calendar.DAY_OF_MONTH);
+                DatePickerDialog mDatePicker;
+                mDatePicker = new DatePickerDialog(view.getContext(), new DatePickerDialog.OnDateSetListener() {
+                    public void onDateSet(DatePicker datepicker, int selectedyear, int selectedmonth, int selectedday) {
+                        selectedmonth = selectedmonth + 1;
+                        dateTextView.setText(new DecimalFormat("00").format(selectedday) + "/" + new DecimalFormat("00").format(selectedmonth) + "/" + selectedyear);
+                    }
+                }, mYear, mMonth, mDay);
+                mDatePicker.setTitle("Select Date");
+                mDatePicker.show();
+            }
+        });
+
+        timeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Calendar mcurrentTime = Calendar.getInstance();
+                int hour = mcurrentTime.get(Calendar.HOUR_OF_DAY);
+                int minute = mcurrentTime.get(Calendar.MINUTE);
+                TimePickerDialog mTimePicker;
+                mTimePicker = new TimePickerDialog(view.getContext(), new TimePickerDialog.OnTimeSetListener() {
+                    @Override
+                    public void onTimeSet(TimePicker timePicker, int selectedHour, int selectedMinute) {
+                        timeTextView.setText(new DecimalFormat("00").format(selectedHour) + ":" + new DecimalFormat("00").format(selectedMinute));
+                    }
+                }, hour, minute, true);
+                mTimePicker.setTitle("Select Time");
+                mTimePicker.show();
+            }
+        });
+
+        String posButtonText = "ADD";
+        if (isEditing) {
+            posButtonText = "UPDATE";
+        }
+        builder.setNegativeButton(android.R.string.cancel, null);
+        builder.setPositiveButton(posButtonText, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+
+            }
+        });
+        builder.create().show();
     }
 
     @Override
@@ -113,7 +208,7 @@ public class MainActivity extends AppCompatActivity
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         Fragment switchTo = null;
-        switch (item.getItemId()){
+        switch (item.getItemId()) {
             case R.id.nav_profile:
                 switchTo = new ProfileFragment();
                 mFab.setVisibility(View.GONE);
@@ -138,10 +233,10 @@ public class MainActivity extends AppCompatActivity
 
         }
 
-        if(switchTo != null) {
+        if (switchTo != null) {
             FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
             ft.replace(R.id.fragment_container, switchTo);
-            for(int i =0; i<getSupportFragmentManager().getBackStackEntryCount();i++){
+            for (int i = 0; i < getSupportFragmentManager().getBackStackEntryCount(); i++) {
                 getSupportFragmentManager().popBackStackImmediate();
             }
             ft.commit();
