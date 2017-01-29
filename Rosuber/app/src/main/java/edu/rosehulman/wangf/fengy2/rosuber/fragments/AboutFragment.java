@@ -22,7 +22,7 @@ public class AboutFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
+        getActivity().findViewById(R.id.fab).setVisibility(View.GONE);
         return inflater.inflate(R.layout.fragment_about, container, false);
     }
 }

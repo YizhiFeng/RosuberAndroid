@@ -49,7 +49,7 @@ public class TripDetailFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
+        getActivity().findViewById(R.id.fab).setVisibility(View.GONE);
         View view = inflater.inflate(R.layout.fragment_trip_detail, container, false);
         TextView timeView = (TextView) view.findViewById(R.id.detail_time_input_text_view);
 //        titleView.setText();

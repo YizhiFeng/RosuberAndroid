@@ -5,31 +5,31 @@
     android:orientation="vertical">
 
     <!--<ToggleButton-->
-        <!--android:id="@+id/toggleButton"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:textOff="@string/i_am_a_driver"-->
-        <!--android:textOn="@string/i_am_a_passenger" />-->
+    <!--android:id="@+id/toggleButton"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:textOff="@string/i_am_a_driver"-->
+    <!--android:textOn="@string/i_am_a_passenger" />-->
 
     <LinearLayout
-        android:layout_marginTop="30dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginLeft="20dp">
+        android:layout_marginLeft="20dp"
+        android:layout_marginTop="30dp"
+        android:orientation="horizontal">
 
         <Switch
+            android:id="@+id/isDriverSwitch"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/isDriverSwitch"
-            android:checked="true"/>
+            android:checked="true" />
 
         <TextView
+            android:id="@+id/isDriverTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/isDriverTextView"
             android:layout_marginLeft="20dp"
-            android:text="@string/i_am_a_driver"/>
+            android:text="@string/i_am_a_driver" />
     </LinearLayout>
 
     <LinearLayout
@@ -130,20 +130,37 @@
 
     <!--</LinearLayout>-->
 
-    <TextView
-        android:id="@+id/numTextView"
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
-        android:text="@string/capacity" />
+        android:layout_marginTop="5dp">
+
+        <TextView
+            android:id="@+id/numTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/capacity" />
+
+        <TextView
+            android:text="0"
+            android:id="@+id/capacityTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@+id/numTextView"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginRight="50dp"
+            />
+
+    </RelativeLayout>
 
     <SeekBar
-        android:id="@+id/seekBar"
+        android:id="@+id/seek_bar"
         style="@style/Widget.AppCompat.SeekBar.Discrete"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:max="5"
-        android:progress="2" />
+        android:progress="0" />
 
     <LinearLayout
         android:layout_width="match_parent"

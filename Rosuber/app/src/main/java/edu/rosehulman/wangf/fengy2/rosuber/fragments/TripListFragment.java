@@ -28,7 +28,7 @@ public class TripListFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
+        getActivity().findViewById(R.id.fab).setVisibility(View.VISIBLE);
         RecyclerView view = (RecyclerView)inflater.inflate(R.layout.fragment_trip_list, container, false);
         view.setLayoutManager(new LinearLayoutManager(getContext()));
         TripListAdapter adapter = new TripListAdapter(getContext(), mCallback);

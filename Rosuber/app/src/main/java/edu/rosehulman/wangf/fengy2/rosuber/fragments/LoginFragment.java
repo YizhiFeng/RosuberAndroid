@@ -37,7 +37,6 @@ public class LoginFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_login, container, false);
         mProgressSpinner = rootView.findViewById(R.id.login_progress);
         mRosefireLoginButton = rootView.findViewById(R.id.rosefire_sign_in_button);

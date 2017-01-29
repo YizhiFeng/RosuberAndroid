@@ -30,11 +30,12 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.text.DecimalFormat;
 import java.util.Calendar;
@@ -52,7 +53,7 @@ import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
-                    TripListFragment.TripListCallback, LoginFragment.OnLoginListener {
+        TripListFragment.TripListCallback, LoginFragment.OnLoginListener {
 
     private static final int RC_ROSEFIRE_LOGIN = 1;
     FloatingActionButton mFab;
@@ -60,6 +61,7 @@ public class MainActivity extends AppCompatActivity
     FirebaseAuth.AuthStateListener mAuthStateListener;
     OnCompleteListener mOnCompleteListener;
     Toolbar mToolbar;
+    User currentUser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,7 +81,7 @@ public class MainActivity extends AppCompatActivity
         mFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                addEditTripDialog(false);
+                addEditTripDialog(false, null);
             }
         });
 
@@ -102,12 +104,10 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 FirebaseUser user = firebaseAuth.getCurrentUser();
-                Log.d("TAG", "USER: " + user);
+                Log.d(Constants.TAG, "USER: " + user);
                 if (user != null) {
                     switchToHomeFragment("users/" + user.getUid());
                 } else {
-                    mFab.setVisibility(View.GONE);
-                    mToolbar.setVisibility(View.GONE);
                     switchToLoginFragment();
                 }
             }
@@ -122,21 +122,22 @@ public class MainActivity extends AppCompatActivity
         };
     }
 
-    public void addEditTripDialog(boolean isEditing) {
+    public void addEditTripDialog(final boolean isEditing, final Trip trip) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         View view = getLayoutInflater().inflate(R.layout.dialog_add, null);
         builder.setView(view);
         builder.setTitle(R.string.add_a_trip);
         final Switch isDriverSwitch = (Switch) view.findViewById(R.id.isDriverSwitch);
         final TextView isDriverTextView = (TextView) view.findViewById(R.id.isDriverTextView);
-        EditText originEditText = (EditText) view.findViewById(R.id.orginEditText);
-        EditText destEditText = (EditText) view.findViewById(R.id.destEditText);
+        final EditText originEditText = (EditText) view.findViewById(R.id.orginEditText);
+        final EditText destEditText = (EditText) view.findViewById(R.id.destEditText);
         Button dateButton = (Button) view.findViewById(R.id.dateButton);
         final TextView dateTextView = (TextView) view.findViewById(R.id.dateTextView);
         Button timeButton = (Button) view.findViewById(R.id.timeButton);
         final TextView timeTextView = (TextView) view.findViewById(R.id.timeTextView);
-//        SeekBar numPassengerSBar = (SeekBar) view.findViewById(R.id.seek_bar);
-        EditText priceEditText = (EditText) view.findViewById(R.id.priceEditText);
+        final SeekBar numPassengerSBar = (SeekBar) view.findViewById(R.id.seek_bar);
+        final TextView capacityTextView = (TextView)view.findViewById(R.id.capacityTextView);
+        final EditText priceEditText = (EditText) view.findViewById(R.id.priceEditText);
 
         isDriverSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -187,15 +188,47 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
+        numPassengerSBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+                capacityTextView.setText(""+i);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+            }
+        });
+
         String posButtonText = "ADD";
         if (isEditing) {
             posButtonText = "UPDATE";
         }
+
+        final DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child("trips");
         builder.setNegativeButton(android.R.string.cancel, null);
         builder.setPositiveButton(posButtonText, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-
+                if (isEditing) {
+                    ref.child(trip.getKey()).setValue(trip);
+                } else {
+                    Trip newTrip = new Trip();
+                    if(isDriverSwitch.isChecked()){
+                        newTrip.setDriverKey(currentUser.getKey());
+                    }else{
+                        newTrip.setPassengerKey(currentUser.getKey());
+                    }
+                    newTrip.setOrigin(originEditText.getText().toString());
+                    newTrip.setDestination(destEditText.getText().toString());
+                    newTrip.setTime(dateTextView.getText().toString()+" "+timeTextView.getText().toString());
+                    newTrip.setPrice(Long.parseLong(priceEditText.getText().toString()));
+                    newTrip.setCapacity(numPassengerSBar.getProgress());
+                    ref.push().setValue(newTrip);
+                }
             }
         });
         builder.create().show();
@@ -242,31 +275,32 @@ public class MainActivity extends AppCompatActivity
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
+        mToolbar.setVisibility(View.VISIBLE);
         Fragment switchTo = null;
         switch (item.getItemId()) {
             case R.id.nav_profile:
-                switchTo = new ProfileFragment();
-                mFab.setVisibility(View.GONE);
+                ProfileFragment profileFragment = new ProfileFragment();
+                Bundle args = new Bundle();
+//                args.putString(Constants.ROSEFIRE_PATH, "users/" + currentUser.getKey());
+//                args.putString(Constants.NAME, currentUser.getName());
+//                args.putString(Constants.EMAIL, currentUser.getEmail());
+                args.putParcelable(Constants.USER, currentUser);
+                profileFragment.setArguments(args);
+                switchTo = profileFragment;
                 break;
             case R.id.nav_home:
                 switchTo = new HomePageFragment();
-                mFab.setVisibility(View.VISIBLE);
                 break;
             case R.id.nav_find_trips:
-                mFab.setVisibility(View.VISIBLE);
                 switchTo = new TripListFragment();
                 break;
             case R.id.nav_trip_history:
-                mFab.setVisibility(View.VISIBLE);
                 break;
             case R.id.nav_about:
                 switchTo = new AboutFragment();
-                mFab.setVisibility(View.GONE);
                 break;
             case R.id.nav_settings:
                 break;
-
         }
 
         if (switchTo != null) {
@@ -301,6 +335,15 @@ public class MainActivity extends AppCompatActivity
             if (result.isSuccessful()) {
                 mAuth.signInWithCustomToken(result.getToken())
                         .addOnCompleteListener(this, mOnCompleteListener);
+                Log.d(Constants.TAG, result.getEmail());
+                Log.d(Constants.TAG, result.getGroup());
+                Log.d(Constants.TAG, result.getName());
+                Log.d(Constants.TAG, result.getUsername());
+//                currentUser = new User(result.getUsername(), result.getName(), result.getEmail());
+                currentUser = new User();
+                currentUser.setKey(result.getUsername());
+                currentUser.setName(result.getName());
+                currentUser.setEmail(result.getEmail());
             } else {
                 showLoginError("Rosefire sign-in error");
             }
@@ -323,13 +366,17 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onRosefireLogin() {
+        mToolbar.setVisibility(View.GONE);
+        mFab.setVisibility(View.GONE);
         Intent signInIntent = Rosefire.getSignInIntent(this, getString(R.string.rosefireKey));
         startActivityForResult(signInIntent, RC_ROSEFIRE_LOGIN);
     }
 
     private void switchToLoginFragment() {
+        mToolbar.setVisibility(View.GONE);
+        mFab.setVisibility(View.GONE);
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        ft.replace(R.id.fragment_container, new LoginFragment(), "Login");
+        ft.replace(R.id.fragment_container, new LoginFragment(), "login");
         ft.commit();
     }
 
@@ -345,10 +392,22 @@ public class MainActivity extends AppCompatActivity
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         Fragment homeFragment = new HomePageFragment();
         Bundle args = new Bundle();
-        args.putString("ROSEFIRE_PATH", path);
+        args.putString(Constants.ROSEFIRE_PATH, path);
+        homeFragment.setArguments(args);
         ft.replace(R.id.fragment_container, homeFragment, "home");
         ft.commit();
     }
+
+//    private void switchToProfileFragment(String path) {
+//        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+//        Fragment profileFragment = new ProfileFragment();
+//        Bundle args = new Bundle();
+//        args.putString(Constants.ROSEFIRE_PATH, path);
+//        profileFragment.setArguments(args);
+//        ft.replace(R.id.fragment_container, profileFragment, "profile");
+//        ft.commit();
+//    }
+
 
     private void showLoginError(String message) {
         LoginFragment loginFragment = (LoginFragment) getSupportFragmentManager().findFragmentByTag("Login");
