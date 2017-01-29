@@ -4,7 +4,7 @@
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
-    <string name="action_settings">Settings</string>
+    <string name="action_logout">Logout</string>
     <string name="nav_trip_title">My Trips</string>
     <string name="nav_find_trips_title">Find Trips</string>
     <string name="nav_profile_title">Profile</string>
@@ -28,4 +28,7 @@
     <string name="capacity">Capacity (Number of passengers)</string>
     <string name="suggested_price">Suggested Price Per Passenger ($)</string>
     <string name="price_hint">e.g. 20</string>
+
+    <string name="login_with_rosefire">Login with Rosefire</string>
+    <string name="login_error">Login Error!</string>
 </resources>

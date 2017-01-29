@@ -4,12 +4,14 @@ import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -27,14 +29,21 @@ import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.TimePicker;
-import android.widget.ToggleButton;
 
-import java.nio.channels.SelectionKey;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+
 import java.text.DecimalFormat;
 import java.util.Calendar;
 
+import edu.rosehulman.rosefire.Rosefire;
+import edu.rosehulman.rosefire.RosefireResult;
 import edu.rosehulman.wangf.fengy2.rosuber.fragments.AboutFragment;
 import edu.rosehulman.wangf.fengy2.rosuber.fragments.HomePageFragment;
+import edu.rosehulman.wangf.fengy2.rosuber.fragments.LoginFragment;
 import edu.rosehulman.wangf.fengy2.rosuber.fragments.ProfileFragment;
 import edu.rosehulman.wangf.fengy2.rosuber.fragments.TripDetailFragment;
 import edu.rosehulman.wangf.fengy2.rosuber.fragments.TripListFragment;
@@ -42,23 +51,28 @@ import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, TripListFragment.TripListCallback {
+        implements NavigationView.OnNavigationItemSelectedListener,
+                    TripListFragment.TripListCallback, LoginFragment.OnLoginListener {
 
+    private static final int RC_ROSEFIRE_LOGIN = 1;
     FloatingActionButton mFab;
+    FirebaseAuth mAuth;
+    FirebaseAuth.AuthStateListener mAuthStateListener;
+    OnCompleteListener mOnCompleteListener;
+    Toolbar mToolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        mToolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(mToolbar);
         //custom font supports
         CalligraphyConfig.initDefault(new CalligraphyConfig.Builder()
                 .setDefaultFontPath("fonts/Philosopher-Regular.ttf")
                 .setFontAttrId(R.attr.fontPath)
                 .build()
         );
-
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         mFab = fab;
@@ -71,19 +85,41 @@ public class MainActivity extends AppCompatActivity
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+                this, drawer, mToolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        if (savedInstanceState == null) {
-            FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-            ft.replace(R.id.fragment_container, new HomePageFragment());
-            ft.commit();
 
-        }
+        mAuth = FirebaseAuth.getInstance();
+        initializeListeners();
+    }
+
+    private void initializeListeners() {
+        mAuthStateListener = new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                FirebaseUser user = firebaseAuth.getCurrentUser();
+                Log.d("TAG", "USER: " + user);
+                if (user != null) {
+                    switchToHomeFragment("users/" + user.getUid());
+                } else {
+                    mFab.setVisibility(View.GONE);
+                    mToolbar.setVisibility(View.GONE);
+                    switchToLoginFragment();
+                }
+            }
+        };
+        mOnCompleteListener = new OnCompleteListener() {
+            @Override
+            public void onComplete(@NonNull Task task) {
+                if (!task.isSuccessful()) {
+                    showLoginError("Login failed");
+                }
+            }
+        };
     }
 
     public void addEditTripDialog(boolean isEditing) {
@@ -91,9 +127,8 @@ public class MainActivity extends AppCompatActivity
         View view = getLayoutInflater().inflate(R.layout.dialog_add, null);
         builder.setView(view);
         builder.setTitle(R.string.add_a_trip);
-//        ToggleButton isDriverTButton = (ToggleButton) view.findViewById(R.id.toggleButton);
-        final Switch isDriverSwitch = (Switch)view.findViewById(R.id.isDriverSwitch);
-        final TextView isDriverTextView = (TextView)view.findViewById(R.id.isDriverTextView);
+        final Switch isDriverSwitch = (Switch) view.findViewById(R.id.isDriverSwitch);
+        final TextView isDriverTextView = (TextView) view.findViewById(R.id.isDriverTextView);
         EditText originEditText = (EditText) view.findViewById(R.id.orginEditText);
         EditText destEditText = (EditText) view.findViewById(R.id.destEditText);
         Button dateButton = (Button) view.findViewById(R.id.dateButton);
@@ -196,7 +231,8 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_logout) {
+            mAuth.signOut();
             return true;
         }
 
@@ -249,10 +285,73 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onTripSelected(Trip trip) {
+        mToolbar.setVisibility(View.VISIBLE);
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         ft.replace(R.id.fragment_container, TripDetailFragment.newInstance(trip));
         ft.addToBackStack("detail");
         ft.commit();
     }
 
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == RC_ROSEFIRE_LOGIN) {
+            RosefireResult result = Rosefire.getSignInResultFromIntent(data);
+            if (result.isSuccessful()) {
+                mAuth.signInWithCustomToken(result.getToken())
+                        .addOnCompleteListener(this, mOnCompleteListener);
+            } else {
+                showLoginError("Rosefire sign-in error");
+            }
+        }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        mAuth.addAuthStateListener(mAuthStateListener);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (mAuthStateListener != null) {
+            mAuth.removeAuthStateListener(mAuthStateListener);
+        }
+    }
+
+    @Override
+    public void onRosefireLogin() {
+        Intent signInIntent = Rosefire.getSignInIntent(this, getString(R.string.rosefireKey));
+        startActivityForResult(signInIntent, RC_ROSEFIRE_LOGIN);
+    }
+
+    private void switchToLoginFragment() {
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        ft.replace(R.id.fragment_container, new LoginFragment(), "Login");
+        ft.commit();
+    }
+
+    private void switchToHomeFragment(String path) {
+//        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+//        Fragment passwordFragment = new PasswordFragment();
+//        Bundle args = new Bundle();
+//        args.putString(Constants.FIREBASE_PATH, path);
+//        passwordFragment.setArguments(args);
+//        ft.replace(R.id.fragment, passwordFragment, "Passwords");
+//        ft.commit();
+        mToolbar.setVisibility(View.VISIBLE);
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        Fragment homeFragment = new HomePageFragment();
+        Bundle args = new Bundle();
+        args.putString("ROSEFIRE_PATH", path);
+        ft.replace(R.id.fragment_container, homeFragment, "home");
+        ft.commit();
+    }
+
+    private void showLoginError(String message) {
+        LoginFragment loginFragment = (LoginFragment) getSupportFragmentManager().findFragmentByTag("Login");
+        loginFragment.onLoginError(message);
+    }
 }

@@ -30,7 +30,6 @@ public class TripDetailFragment extends Fragment {
      * @param trip trip.
      * @return A new instance of fragment TripDetailFragment.
      */
-    // TODO: Rename and change types and number of parameters
     public static TripDetailFragment newInstance(Trip trip) {
         TripDetailFragment fragment = new TripDetailFragment();
         Bundle args = new Bundle();
