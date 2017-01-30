@@ -2,7 +2,8 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:padding="12dp">
 
     <!--<ToggleButton-->
     <!--android:id="@+id/toggleButton"-->
@@ -133,13 +134,14 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="5dp">
+        android:layout_marginTop="15dp">
 
         <TextView
             android:id="@+id/numTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/capacity" />
+            android:text="@string/capacity"
+            android:textSize="16sp" />
 
         <TextView
             android:text="0"
@@ -155,6 +157,7 @@
     </RelativeLayout>
 
     <SeekBar
+        android:layout_marginTop="15dp"
         android:id="@+id/seek_bar"
         style="@style/Widget.AppCompat.SeekBar.Discrete"
         android:layout_width="match_parent"
@@ -165,7 +168,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:layout_marginTop="8dp">
 
         <TextView
             android:id="@+id/priceTextView"

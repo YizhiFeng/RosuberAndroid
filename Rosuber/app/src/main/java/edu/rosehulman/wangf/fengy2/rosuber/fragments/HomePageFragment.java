@@ -41,7 +41,7 @@ public class HomePageFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        getActivity().findViewById(R.id.fab).setVisibility(View.VISIBLE);
+        getActivity().findViewById(R.id.fab).setVisibility(View.GONE);
         View rootView = inflater.inflate(R.layout.fragment_homepage, container, false);
         TextView textView = (TextView) rootView.findViewById(R.id.homepageText);
 //        textView.setText("");

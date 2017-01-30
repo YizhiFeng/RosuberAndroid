@@ -1,12 +1,15 @@
 package edu.rosehulman.wangf.fengy2.rosuber.fragments;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
+import edu.rosehulman.wangf.fengy2.rosuber.MainActivity;
 import edu.rosehulman.wangf.fengy2.rosuber.R;
 import edu.rosehulman.wangf.fengy2.rosuber.Trip;
 
@@ -18,6 +21,7 @@ public class TripDetailFragment extends Fragment {
 
     private static final String ARG_TRIP = "ARG_TRIP";
     private Trip mTrip;
+    private OnJoinListener mListener;
 
     public TripDetailFragment(){
 
@@ -51,12 +55,54 @@ public class TripDetailFragment extends Fragment {
                              Bundle savedInstanceState) {
         getActivity().findViewById(R.id.fab).setVisibility(View.GONE);
         View view = inflater.inflate(R.layout.fragment_trip_detail, container, false);
+        //time
         TextView timeView = (TextView) view.findViewById(R.id.detail_time_input_text_view);
-//        titleView.setText();
+        timeView.setText(mTrip.getTime());
+        //origin
+        TextView originView = (TextView) view.findViewById(R.id.detail_origin_input_text_view);
+        originView.setText(mTrip.getOrigin());
+        //destination
+        TextView destinationView = (TextView) view.findViewById(R.id.detail_destination_input_text_view);
+        destinationView.setText(mTrip.getOrigin());
+        //driver
+        TextView driverView = (TextView) view.findViewById(R.id.detail_driver_input_text_view);
+        driverView.setText(mTrip.getDriverKey());
+        //passenger
+        TextView passengerView = (TextView) view.findViewById(R.id.detail_passenger_input_text_view);
+        passengerView.setText(mTrip.getPassengerKey());
+        //price
+        TextView priceView = (TextView) view.findViewById(R.id.detail_price_input_text_view);
+        priceView.setText(mTrip.getPrice()+"");
 
-        TextView bodyView = (TextView) view.findViewById(R.id.detail_origin_input_text_view);
-//        bodyView.setText(mTrip.getText());
-
+        //join button
+        Button joinButton = (Button) view.findViewById(R.id.join_trip_buton);
+        joinButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mListener.onJoinButtonPressed(mTrip);
+            }
+        });
         return view;
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof TripListFragment.TripListCallback) {
+            mListener = (TripDetailFragment.OnJoinListener) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement OnFragmentInteractionListener");
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mListener = null;
+    }
+
+    public interface OnJoinListener{
+        void onJoinButtonPressed(Trip trip);
     }
 }

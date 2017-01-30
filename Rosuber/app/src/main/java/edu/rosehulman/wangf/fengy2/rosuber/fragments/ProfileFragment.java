@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -23,6 +24,7 @@ public class ProfileFragment extends Fragment {
 
     private DatabaseReference mRef;
     private User mUser;
+    private FirebaseAuth mAuth;
 
     public ProfileFragment(){
     }
@@ -33,6 +35,7 @@ public class ProfileFragment extends Fragment {
 //        String roseFirePath = getArguments().getString(Constants.ROSEFIRE_PATH);
 //        String roseFirePath = "";
         mUser = getArguments().getParcelable(Constants.USER);
+
 //        Log.d(Constants.TAG,roseFirePath);
 //        if (roseFirePath == null || roseFirePath.isEmpty()) {
 //            mRef = FirebaseDatabase.getInstance().getReference();
@@ -40,6 +43,7 @@ public class ProfileFragment extends Fragment {
 //            mRef = FirebaseDatabase.getInstance().getReference().child(roseFirePath);
 //        }
         mRef = FirebaseDatabase.getInstance().getReference().child("users");
+
     }
 
     @Override

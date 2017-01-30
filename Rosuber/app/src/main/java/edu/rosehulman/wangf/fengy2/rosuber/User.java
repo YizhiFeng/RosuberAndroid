@@ -14,8 +14,7 @@ import java.util.ArrayList;
 public class User implements Parcelable{
     private String key;
     private String name;
-    private String nickname;
-    private String phoneNumber;
+    private Long phoneNumber;
     private String email;
 //    private ArrayList<String> ownedTripsKeys?
 
@@ -31,8 +30,7 @@ public class User implements Parcelable{
     protected User(Parcel in) {
         key = in.readString();
         name = in.readString();
-        nickname = in.readString();
-        phoneNumber = in.readString();
+        phoneNumber = in.readLong();
         email = in.readString();
     }
 
@@ -73,19 +71,11 @@ public class User implements Parcelable{
         this.name = name;
     }
 
-    public String getNickname() {
-        return nickname;
-    }
-
-    public void setNickname(String nickname) {
-        this.nickname = nickname;
-    }
-
-    public String getPhoneNumber() {
+    public Long getPhoneNumber() {
         return phoneNumber;
     }
 
-    public void setPhoneNumber(String phoneNumber) {
+    public void setPhoneNumber(Long phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
 
@@ -98,8 +88,7 @@ public class User implements Parcelable{
     public void writeToParcel(Parcel parcel, int i) {
         parcel.writeString(key);
         parcel.writeString(name);
-        parcel.writeString(nickname);
-        parcel.writeString(phoneNumber);
+        parcel.writeLong(phoneNumber);
         parcel.writeString(email);
     }
 }

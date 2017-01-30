@@ -20,6 +20,7 @@ import edu.rosehulman.wangf.fengy2.rosuber.TripListAdapter;
 
 public class TripListFragment extends Fragment {
     private TripListCallback mCallback;
+    private TripListAdapter madapter;
 
     public TripListFragment(){
 
@@ -32,6 +33,7 @@ public class TripListFragment extends Fragment {
         RecyclerView view = (RecyclerView)inflater.inflate(R.layout.fragment_trip_list, container, false);
         view.setLayoutManager(new LinearLayoutManager(getContext()));
         TripListAdapter adapter = new TripListAdapter(getContext(), mCallback);
+        madapter = adapter;
         view.setAdapter(adapter);
         return view;
     }
@@ -51,6 +53,10 @@ public class TripListFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
         mCallback = null;
+    }
+
+    public TripListAdapter getAdapter(){
+        return madapter;
     }
 
     public interface TripListCallback {

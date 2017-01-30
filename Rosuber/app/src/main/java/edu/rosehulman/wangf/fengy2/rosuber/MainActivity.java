@@ -5,7 +5,9 @@ import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
@@ -36,6 +38,8 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.text.DecimalFormat;
 import java.util.Calendar;
@@ -53,15 +57,22 @@ import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
-        TripListFragment.TripListCallback, LoginFragment.OnLoginListener {
+        TripListFragment.TripListCallback, LoginFragment.OnLoginListener, TripDetailFragment.OnJoinListener {
 
+    private final static String PREFS = "PREFS";
     private static final int RC_ROSEFIRE_LOGIN = 1;
+    private static final String KEY_USER_NAME = "USER_NAME";
+    private static final String KEY_USER_KEY= "USER_KEY";
+    private static final String KEY_USER_EMAIL= "USER_EMAIL";
+    private static final String KEY_USER_PHONE= "USER_PHONE";
     FloatingActionButton mFab;
     FirebaseAuth mAuth;
     FirebaseAuth.AuthStateListener mAuthStateListener;
     OnCompleteListener mOnCompleteListener;
     Toolbar mToolbar;
     User currentUser;
+    TripListFragment mTripListFragment;
+    StorageReference imageRef = FirebaseStorage.getInstance().getReferenceFromUrl("gs://rosuber-android.appspot.com").child("images");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,6 +105,12 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+        SharedPreferences prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
+        currentUser = new User();
+        currentUser.setKey(prefs.getString(KEY_USER_KEY,null));
+        currentUser.setEmail(prefs.getString(KEY_USER_EMAIL,null));
+        currentUser.setName(prefs.getString(KEY_USER_NAME,null));
+        currentUser.setPhoneNumber(prefs.getLong(KEY_USER_PHONE,0));
 
         mAuth = FirebaseAuth.getInstance();
         initializeListeners();
@@ -107,6 +124,8 @@ public class MainActivity extends AppCompatActivity
                 Log.d(Constants.TAG, "USER: " + user);
                 if (user != null) {
                     switchToHomeFragment("users/" + user.getUid());
+
+
                 } else {
                     switchToLoginFragment();
                 }
@@ -120,6 +139,37 @@ public class MainActivity extends AppCompatActivity
                 }
             }
         };
+    }
+
+    public void joinTripConfirmDialog(final Trip trip){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Join This Trip As The Following Role");
+        long capacity = trip.getCapacity();
+
+        if(trip.getDriverKey()==null){
+            String[] selections = new String[]{"Passenger","Driver"};
+            builder.setSingleChoiceItems(selections, 0, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+
+                }
+            });
+        }
+        
+
+        builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                trip.setPassengerKey(mAuth.getCurrentUser().getUid());
+                mTripListFragment.getAdapter().editTrip(trip);
+                FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+                ft.replace(R.id.fragment_container, mTripListFragment);
+                ft.addToBackStack("list");
+                ft.commit();
+            }
+        });
+        builder.setNegativeButton(android.R.string.cancel, null);
+        builder.create().show();
     }
 
     public void addEditTripDialog(final boolean isEditing, final Trip trip) {
@@ -208,13 +258,18 @@ public class MainActivity extends AppCompatActivity
             posButtonText = "UPDATE";
         }
 
-        final DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child("trips");
         builder.setNegativeButton(android.R.string.cancel, null);
         builder.setPositiveButton(posButtonText, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 if (isEditing) {
-                    ref.child(trip.getKey()).setValue(trip);
+                    trip.setOrigin(originEditText.getText().toString());
+                    trip.setDestination(destEditText.getText().toString());
+                    trip.setTime(dateTextView.getText().toString()+" "+timeTextView.getText().toString());
+                    trip.setPrice(Long.parseLong(priceEditText.getText().toString()));
+                    trip.setCapacity(numPassengerSBar.getProgress());
+                    mTripListFragment.getAdapter().editTrip(trip);
+
                 } else {
                     Trip newTrip = new Trip();
                     if(isDriverSwitch.isChecked()){
@@ -227,7 +282,7 @@ public class MainActivity extends AppCompatActivity
                     newTrip.setTime(dateTextView.getText().toString()+" "+timeTextView.getText().toString());
                     newTrip.setPrice(Long.parseLong(priceEditText.getText().toString()));
                     newTrip.setCapacity(numPassengerSBar.getProgress());
-                    ref.push().setValue(newTrip);
+                    mTripListFragment.getAdapter().addTrip(newTrip);
                 }
             }
         });
@@ -289,10 +344,15 @@ public class MainActivity extends AppCompatActivity
                 switchTo = profileFragment;
                 break;
             case R.id.nav_home:
-                switchTo = new HomePageFragment();
+                HomePageFragment homePageFragment = new HomePageFragment();
+                Bundle homeArgs = new Bundle();
+                homeArgs.putString(Constants.ROSEFIRE_PATH, "users/" + mAuth.getCurrentUser().getUid());
+                homePageFragment.setArguments(homeArgs);
+                switchTo = homePageFragment;
                 break;
             case R.id.nav_find_trips:
-                switchTo = new TripListFragment();
+                mTripListFragment = new TripListFragment();
+                switchTo = mTripListFragment;
                 break;
             case R.id.nav_trip_history:
                 break;
@@ -344,6 +404,10 @@ public class MainActivity extends AppCompatActivity
                 currentUser.setKey(result.getUsername());
                 currentUser.setName(result.getName());
                 currentUser.setEmail(result.getEmail());
+                DatabaseReference userRef = FirebaseDatabase.getInstance().getReference().child("users");
+                if(userRef.child(result.getUsername())==null){
+                    userRef.child(result.getUsername()).setValue(currentUser);
+                }
             } else {
                 showLoginError("Rosefire sign-in error");
             }
@@ -412,5 +476,25 @@ public class MainActivity extends AppCompatActivity
     private void showLoginError(String message) {
         LoginFragment loginFragment = (LoginFragment) getSupportFragmentManager().findFragmentByTag("Login");
         loginFragment.onLoginError(message);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        SharedPreferences prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString(KEY_USER_KEY, currentUser.getKey());
+        editor.putString(KEY_USER_EMAIL, currentUser.getEmail());
+        editor.putString(KEY_USER_NAME, currentUser.getName());
+        if(currentUser.getPhoneNumber()!=null){
+        editor.putLong(KEY_USER_PHONE, currentUser.getPhoneNumber());}
+
+        // Put the other fields into the editor
+        editor.commit();
+    }
+
+    @Override
+    public void onJoinButtonPressed(Trip trip) {
+        joinTripConfirmDialog(trip);
     }
 }

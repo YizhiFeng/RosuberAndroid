@@ -12,4 +12,5 @@ public class Constants {
     public static final String PHONE = "PHONE";
     public static final String EMAIL = "EMAIL";
     public static final String USER = "USER";
+    public static final String AUTH = "AUTH";
 }

@@ -29,14 +29,15 @@
     <Button
         android:id="@+id/rosefire_sign_in_button"
         style="?android:textAppearanceSmall"
-        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@color/textColorPrimary"
+        android:background="@color/common_google_signin_btn_text_dark_default"
         android:text="@string/login_with_rosefire"
-        android:textColor="#fff"
-        android:textStyle="bold"
         android:padding="5dp"
+        android:layout_width="300dp"
         android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true" />
+        android:layout_centerHorizontal="true"
+        android:textSize="16sp"
+        android:textStyle="normal|bold"
+        android:textColor="@android:color/black" />
 
 </RelativeLayout>

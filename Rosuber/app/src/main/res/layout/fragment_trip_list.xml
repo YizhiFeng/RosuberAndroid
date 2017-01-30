@@ -3,6 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/icons"
+    android:paddingTop="5dp"
     tools:context=".fragments.TripListFragment">
 
 </android.support.v7.widget.RecyclerView>

@@ -114,4 +114,14 @@ public class Trip implements Parcelable{
     @Override
     public void writeToParcel(Parcel parcel, int i) {
     }
+
+    public void setValues(Trip trip) {
+        this.capacity = trip.capacity;
+        this.origin = trip.origin;
+        this.destination = trip.destination;
+        this.price = trip.price;
+        this.driverKey = trip.driverKey;
+        this.passengerKey = trip.passengerKey;
+        this.time = trip.time;
+    }
 }
