@@ -33,10 +33,14 @@
     <ImageButton
         android:id="@+id/profileImageButton"
         android:layout_marginTop="13dp"
-        android:layout_width="85dp"
-        android:layout_height="85dp"
         android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true" />
+        android:layout_centerHorizontal="true"
+        android:scaleType="centerCrop"
+        android:elevation="0dp"
+        android:background="@android:color/transparent"
+        android:cropToPadding="false"
+        android:layout_width="120dp"
+        android:layout_height="120dp" />
 
     <TextView
         android:text="ToBeFilledName"
@@ -105,7 +109,7 @@
 
     <ImageButton
         app:srcCompat="@drawable/ic_edit_black_48dp"
-        android:id="@+id/imageButton"
+        android:id="@+id/editImageButton"
         android:background="@android:color/transparent"
         android:scaleType="centerCrop"
         android:layout_width="30dp"

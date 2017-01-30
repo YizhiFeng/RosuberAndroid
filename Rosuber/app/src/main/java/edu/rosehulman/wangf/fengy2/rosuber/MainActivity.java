@@ -1,13 +1,18 @@
 package edu.rosehulman.wangf.fengy2.rosuber;
 
+import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
@@ -27,20 +32,32 @@ import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.util.Calendar;
 
@@ -57,10 +74,11 @@ import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
-        TripListFragment.TripListCallback, LoginFragment.OnLoginListener, TripDetailFragment.OnJoinListener {
+        TripListFragment.TripListCallback, LoginFragment.OnLoginListener, TripDetailFragment.OnJoinListener, ProfileFragment.UploadImageListener {
 
     private final static String PREFS = "PREFS";
     private static final int RC_ROSEFIRE_LOGIN = 1;
+    private static final int RC_SELECT_IMAGE = 2;
     private static final String KEY_USER_NAME = "USER_NAME";
     private static final String KEY_USER_KEY= "USER_KEY";
     private static final String KEY_USER_EMAIL= "USER_EMAIL";
@@ -72,7 +90,12 @@ public class MainActivity extends AppCompatActivity
     Toolbar mToolbar;
     User currentUser;
     TripListFragment mTripListFragment;
+    TextView navNameTextView;
+    TextView navContactInfoTextView;
     StorageReference imageRef = FirebaseStorage.getInstance().getReferenceFromUrl("gs://rosuber-android.appspot.com").child("images");
+    DatabaseReference userRef = FirebaseDatabase.getInstance().getReference().child("users");
+    String profileImagePath;
+    ImageView navProfileImageView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -114,6 +137,69 @@ public class MainActivity extends AppCompatActivity
 
         mAuth = FirebaseAuth.getInstance();
         initializeListeners();
+
+
+
+        final ImageView profileImageView = (ImageView) navigationView.getHeaderView(0).findViewById(R.id.profile_image);
+//        StorageReference islandRef = imageRef.child(currentUser.getKey());
+//        navProfileImageView=profileImageView;
+//
+//        File localFile = null;
+//        try {
+//            localFile = File.createTempFile("images", "jpg");
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//
+//        final File finalLocalFile = localFile;
+//        islandRef.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+//            @Override
+//            public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+//                // Local temp file has been created
+//                Bitmap bmp = BitmapFactory.decodeFile(finalLocalFile.getPath());
+//                profileImageView.setImageBitmap(bmp);
+//            }
+//        }).addOnFailureListener(new OnFailureListener() {
+//            @Override
+//            public void onFailure(@NonNull Exception exception) {
+//                // Handle any errors
+//            }
+//        });
+//        profileImagePath = finalLocalFile.getPath();
+        navNameTextView = (TextView) navigationView.getHeaderView(0).findViewById(R.id.nav_name_text);
+        navNameTextView.setText(currentUser.getName());
+        navContactInfoTextView = (TextView) navigationView.getHeaderView(0).findViewById(R.id.nav_contact_info_text);
+        navContactInfoTextView.setText(currentUser.getEmail());
+
+//        userRef.child(currentUser.getKey()).addChildEventListener(new ChildEventListener() {
+//            @Override
+//            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+//                currentUser = dataSnapshot.getValue(User.class);
+//                if(currentUser.getPhoneNumber()==null || currentUser.getPhoneNumber()==0){
+//                    showAddPhoneNumberDialog();
+//                }
+//            }
+//
+//            @Override
+//            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+//                currentUser = dataSnapshot.getValue(User.class);
+//            }
+//
+//            @Override
+//            public void onChildRemoved(DataSnapshot dataSnapshot) {
+//
+//            }
+//
+//            @Override
+//            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+//
+//            }
+//
+//            @Override
+//            public void onCancelled(DatabaseError databaseError) {
+//
+//            }
+//        });
     }
 
     private void initializeListeners() {
@@ -124,8 +210,6 @@ public class MainActivity extends AppCompatActivity
                 Log.d(Constants.TAG, "USER: " + user);
                 if (user != null) {
                     switchToHomeFragment("users/" + user.getUid());
-
-
                 } else {
                     switchToLoginFragment();
                 }
@@ -155,7 +239,7 @@ public class MainActivity extends AppCompatActivity
                 }
             });
         }
-        
+
 
         builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
             @Override
@@ -399,19 +483,64 @@ public class MainActivity extends AppCompatActivity
                 Log.d(Constants.TAG, result.getGroup());
                 Log.d(Constants.TAG, result.getName());
                 Log.d(Constants.TAG, result.getUsername());
-//                currentUser = new User(result.getUsername(), result.getName(), result.getEmail());
                 currentUser = new User();
                 currentUser.setKey(result.getUsername());
                 currentUser.setName(result.getName());
                 currentUser.setEmail(result.getEmail());
-                DatabaseReference userRef = FirebaseDatabase.getInstance().getReference().child("users");
-                if(userRef.child(result.getUsername())==null){
-                    userRef.child(result.getUsername()).setValue(currentUser);
-                }
+
+                showAddPhoneNumberDialog();
+                userRef.child(currentUser.getKey()).setValue(currentUser);
+
+
             } else {
                 showLoginError("Rosefire sign-in error");
             }
+        }else if(requestCode == RC_SELECT_IMAGE && resultCode == Activity.RESULT_OK){
+            if (data == null) {
+                //Display an error
+                Log.d(Constants.TAG, "onActivityResult: image selection");
+                return;
+            }
+            try {
+                InputStream inputStream = getApplicationContext().getContentResolver().openInputStream(data.getData());
+                StorageReference imageUserRef = imageRef.child(currentUser.getKey());
+                UploadTask uploadTask = imageUserRef.putStream(inputStream);
+                uploadTask.addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception exception) {
+                        // Handle unsuccessful uploads
+                    }
+                }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
+                        Uri downloadUrl = taskSnapshot.getDownloadUrl();
+                        Log.d("upload image", "onSuccess: "+downloadUrl);
+                        switchToProfileFragment();
+                    }
+                });
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
         }
+    }
+
+    private void showAddPhoneNumberDialog() {
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.phone_dialog_title);
+        View view = getLayoutInflater().inflate(R.layout.dialog_add_phone, null);
+        builder.setView(view);
+        final EditText phoneEditText = (EditText) view.findViewById(R.id.editText_phone_number);
+        builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                currentUser.setPhoneNumber(Long.valueOf(phoneEditText.getText().toString()));
+                userRef.child(currentUser.getKey()).setValue(currentUser);
+                switchToHomeFragment("users/"+currentUser.getKey());
+            }
+        });
+        builder.create().show();
     }
 
     @Override
@@ -444,14 +573,23 @@ public class MainActivity extends AppCompatActivity
         ft.commit();
     }
 
+    private void switchToProfileFragment() {
+
+        ProfileFragment profileFragment = new ProfileFragment();
+        Bundle args = new Bundle();
+//                args.putString(Constants.ROSEFIRE_PATH, "users/" + currentUser.getKey());
+//                args.putString(Constants.NAME, currentUser.getName());
+//                args.putString(Constants.EMAIL, currentUser.getEmail());
+        args.putParcelable(Constants.USER, currentUser);
+        profileFragment.setArguments(args);
+
+        mFab.setVisibility(View.GONE);
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        ft.replace(R.id.fragment_container, profileFragment, "login");
+        ft.commit();
+    }
+
     private void switchToHomeFragment(String path) {
-//        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-//        Fragment passwordFragment = new PasswordFragment();
-//        Bundle args = new Bundle();
-//        args.putString(Constants.FIREBASE_PATH, path);
-//        passwordFragment.setArguments(args);
-//        ft.replace(R.id.fragment, passwordFragment, "Passwords");
-//        ft.commit();
         mToolbar.setVisibility(View.VISIBLE);
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         Fragment homeFragment = new HomePageFragment();
@@ -461,16 +599,6 @@ public class MainActivity extends AppCompatActivity
         ft.replace(R.id.fragment_container, homeFragment, "home");
         ft.commit();
     }
-
-//    private void switchToProfileFragment(String path) {
-//        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-//        Fragment profileFragment = new ProfileFragment();
-//        Bundle args = new Bundle();
-//        args.putString(Constants.ROSEFIRE_PATH, path);
-//        profileFragment.setArguments(args);
-//        ft.replace(R.id.fragment_container, profileFragment, "profile");
-//        ft.commit();
-//    }
 
 
     private void showLoginError(String message) {
@@ -496,5 +624,25 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onJoinButtonPressed(Trip trip) {
         joinTripConfirmDialog(trip);
+    }
+
+    @Override
+    public void onImageButtonPressed() {
+        Intent pickIntent = new Intent();
+        pickIntent.setType("image/*");
+        pickIntent.setAction(Intent.ACTION_GET_CONTENT);
+
+        Intent takePhotoIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+
+        String pickTitle = getString(R.string.image_intent_title); // Or get from strings.xml
+        Intent chooserIntent = Intent.createChooser(pickIntent, pickTitle);
+        chooserIntent.putExtra
+                (
+                        Intent.EXTRA_INITIAL_INTENTS,
+                        new Intent[] { takePhotoIntent }
+                );
+
+        Log.d("image", "onImageButtonPressed: ");
+        startActivityForResult(chooserIntent, RC_SELECT_IMAGE);
     }
 }

@@ -31,4 +31,6 @@
 
     <string name="login_with_rosefire">Login with Rosefire</string>
     <string name="login_error">Login Error!</string>
+    <string name="image_intent_title">Select or Take a new Picture</string>
+    <string name="phone_dialog_title">Enter Your PhoneNumber To Complete Your Information</string>
 </resources>
