@@ -44,11 +44,11 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -94,7 +94,6 @@ public class MainActivity extends AppCompatActivity
     TextView navContactInfoTextView;
     StorageReference imageRef = FirebaseStorage.getInstance().getReferenceFromUrl("gs://rosuber-android.appspot.com").child("images");
     DatabaseReference userRef = FirebaseDatabase.getInstance().getReference().child("users");
-    String profileImagePath;
     ImageView navProfileImageView;
 
     @Override
@@ -138,68 +137,16 @@ public class MainActivity extends AppCompatActivity
         mAuth = FirebaseAuth.getInstance();
         initializeListeners();
 
-
-
         final ImageView profileImageView = (ImageView) navigationView.getHeaderView(0).findViewById(R.id.profile_image);
-//        StorageReference islandRef = imageRef.child(currentUser.getKey());
-//        navProfileImageView=profileImageView;
-//
-//        File localFile = null;
-//        try {
-//            localFile = File.createTempFile("images", "jpg");
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//
-//        final File finalLocalFile = localFile;
-//        islandRef.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
-//            @Override
-//            public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
-//                // Local temp file has been created
-//                Bitmap bmp = BitmapFactory.decodeFile(finalLocalFile.getPath());
-//                profileImageView.setImageBitmap(bmp);
-//            }
-//        }).addOnFailureListener(new OnFailureListener() {
-//            @Override
-//            public void onFailure(@NonNull Exception exception) {
-//                // Handle any errors
-//            }
-//        });
+        navProfileImageView = profileImageView;
+
 //        profileImagePath = finalLocalFile.getPath();
         navNameTextView = (TextView) navigationView.getHeaderView(0).findViewById(R.id.nav_name_text);
         navNameTextView.setText(currentUser.getName());
         navContactInfoTextView = (TextView) navigationView.getHeaderView(0).findViewById(R.id.nav_contact_info_text);
         navContactInfoTextView.setText(currentUser.getEmail());
 
-//        userRef.child(currentUser.getKey()).addChildEventListener(new ChildEventListener() {
-//            @Override
-//            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-//                currentUser = dataSnapshot.getValue(User.class);
-//                if(currentUser.getPhoneNumber()==null || currentUser.getPhoneNumber()==0){
-//                    showAddPhoneNumberDialog();
-//                }
-//            }
-//
-//            @Override
-//            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-//                currentUser = dataSnapshot.getValue(User.class);
-//            }
-//
-//            @Override
-//            public void onChildRemoved(DataSnapshot dataSnapshot) {
-//
-//            }
-//
-//            @Override
-//            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-//
-//            }
-//
-//            @Override
-//            public void onCancelled(DatabaseError databaseError) {
-//
-//            }
-//        });
+        loadProfileImage();
     }
 
     private void initializeListeners() {
@@ -405,6 +352,7 @@ public class MainActivity extends AppCompatActivity
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_logout) {
             mAuth.signOut();
+            currentUser = null;
             return true;
         }
 
@@ -472,7 +420,7 @@ public class MainActivity extends AppCompatActivity
 
 
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+    public void onActivityResult(int requestCode, int resultCode, final Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == RC_ROSEFIRE_LOGIN) {
             RosefireResult result = Rosefire.getSignInResultFromIntent(data);
@@ -487,10 +435,6 @@ public class MainActivity extends AppCompatActivity
                 currentUser.setKey(result.getUsername());
                 currentUser.setName(result.getName());
                 currentUser.setEmail(result.getEmail());
-
-                showAddPhoneNumberDialog();
-                userRef.child(currentUser.getKey()).setValue(currentUser);
-
 
             } else {
                 showLoginError("Rosefire sign-in error");
@@ -525,8 +469,33 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    private void showAddPhoneNumberDialog() {
+    private void loadProfileImage(){
+        StorageReference profileImageRef = imageRef.child(currentUser.getKey());
 
+        File localFile = null;
+        try {
+            localFile = File.createTempFile("images", "jpg");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        final File finalLocalFile = localFile;
+        profileImageRef.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                // Local temp file has been created
+                Bitmap bmp = BitmapFactory.decodeFile(finalLocalFile.getPath());
+                navProfileImageView.setImageBitmap(bmp);
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception exception) {
+                // Handle any errors
+            }
+        });
+    }
+
+    private void showAddPhoneNumberDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(R.string.phone_dialog_title);
         View view = getLayoutInflater().inflate(R.layout.dialog_add_phone, null);
@@ -536,8 +505,8 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 currentUser.setPhoneNumber(Long.valueOf(phoneEditText.getText().toString()));
+                Log.d("phone number", "onClick: "+currentUser.getKey());
                 userRef.child(currentUser.getKey()).setValue(currentUser);
-                switchToHomeFragment("users/"+currentUser.getKey());
             }
         });
         builder.create().show();
@@ -555,6 +524,7 @@ public class MainActivity extends AppCompatActivity
         if (mAuthStateListener != null) {
             mAuth.removeAuthStateListener(mAuthStateListener);
         }
+//        userRef.removeEventListener();
     }
 
     @Override
@@ -577,9 +547,6 @@ public class MainActivity extends AppCompatActivity
 
         ProfileFragment profileFragment = new ProfileFragment();
         Bundle args = new Bundle();
-//                args.putString(Constants.ROSEFIRE_PATH, "users/" + currentUser.getKey());
-//                args.putString(Constants.NAME, currentUser.getName());
-//                args.putString(Constants.EMAIL, currentUser.getEmail());
         args.putParcelable(Constants.USER, currentUser);
         profileFragment.setArguments(args);
 
@@ -590,6 +557,27 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void switchToHomeFragment(String path) {
+        userRef.child(currentUser.getKey()).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                User user = dataSnapshot.getValue(User.class);
+                if(user.getPhoneNumber()==null){
+                    Log.d("datachanged", "onDataChange: "+currentUser.getKey());
+                    showAddPhoneNumberDialog();
+                }
+                currentUser.setPhoneNumber(user.getPhoneNumber());
+                currentUser.setName(user.getName());
+                currentUser.setEmail(user.getEmail());
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+        userRef.child(currentUser.getKey()).setValue(currentUser);
+
+        loadProfileImage();
         mToolbar.setVisibility(View.VISIBLE);
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         Fragment homeFragment = new HomePageFragment();
@@ -611,10 +599,11 @@ public class MainActivity extends AppCompatActivity
         super.onPause();
         SharedPreferences prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
+        if(currentUser!=null){
         editor.putString(KEY_USER_KEY, currentUser.getKey());
         editor.putString(KEY_USER_EMAIL, currentUser.getEmail());
         editor.putString(KEY_USER_NAME, currentUser.getName());
-        if(currentUser.getPhoneNumber()!=null){
+//        if(currentUser.getPhoneNumber()!=null){
         editor.putLong(KEY_USER_PHONE, currentUser.getPhoneNumber());}
 
         // Put the other fields into the editor

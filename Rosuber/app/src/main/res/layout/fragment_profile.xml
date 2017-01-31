@@ -40,7 +40,8 @@
         android:background="@android:color/transparent"
         android:cropToPadding="false"
         android:layout_width="120dp"
-        android:layout_height="120dp" />
+        android:layout_height="120dp"
+        app:srcCompat="@drawable/ic_default_profile" />
 
     <TextView
         android:text="ToBeFilledName"
@@ -118,6 +119,16 @@
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
         android:layout_marginBottom="10dp" />
+
+    <TextView
+        android:text="@string/imageButton_help_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/textView3"
+        android:textSize="12sp"
+        android:layout_below="@+id/profileImageButton"
+        android:layout_alignLeft="@+id/profileImageButton"
+        android:layout_alignStart="@+id/profileImageButton" />
 
 
 </RelativeLayout>

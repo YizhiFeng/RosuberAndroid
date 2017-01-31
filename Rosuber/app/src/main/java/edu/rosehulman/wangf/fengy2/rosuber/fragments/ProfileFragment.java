@@ -50,8 +50,6 @@ public class ProfileFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        String roseFirePath = getArguments().getString(Constants.ROSEFIRE_PATH);
-//        String roseFirePath = "";
         mUser = getArguments().getParcelable(Constants.USER);
 
 //        Log.d(Constants.TAG,roseFirePath);
@@ -83,7 +81,7 @@ public class ProfileFragment extends Fragment {
         nameTextView.setText(mUser.getName());
         emailTextView.setText(mUser.getEmail());
         phoneTextView.setText(mUser.getPhoneNumber() + "");
-        mRef.child(mUser.getKey()).setValue(mUser);
+//        mRef.child(mUser.getKey()).setValue(mUser);
 
         final ImageButton imageButton = (ImageButton) rootView.findViewById(R.id.profileImageButton);
         imageButton.setOnClickListener(new View.OnClickListener() {
