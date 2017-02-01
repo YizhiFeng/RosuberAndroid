@@ -368,9 +368,6 @@ public class MainActivity extends AppCompatActivity
             case R.id.nav_profile:
                 ProfileFragment profileFragment = new ProfileFragment();
                 Bundle args = new Bundle();
-//                args.putString(Constants.ROSEFIRE_PATH, "users/" + currentUser.getKey());
-//                args.putString(Constants.NAME, currentUser.getName());
-//                args.putString(Constants.EMAIL, currentUser.getEmail());
                 args.putParcelable(Constants.USER, currentUser);
                 profileFragment.setArguments(args);
                 switchTo = profileFragment;
@@ -427,15 +424,16 @@ public class MainActivity extends AppCompatActivity
             if (result.isSuccessful()) {
                 mAuth.signInWithCustomToken(result.getToken())
                         .addOnCompleteListener(this, mOnCompleteListener);
-                Log.d(Constants.TAG, result.getEmail());
-                Log.d(Constants.TAG, result.getGroup());
-                Log.d(Constants.TAG, result.getName());
-                Log.d(Constants.TAG, result.getUsername());
+//                Log.d(Constants.TAG, result.getEmail());
+//                Log.d(Constants.TAG, result.getGroup());
+//                Log.d(Constants.TAG, result.getName());
+//                Log.d(Constants.TAG, result.getUsername());
+                userRef.keepSynced(true);
                 currentUser = new User();
                 currentUser.setKey(result.getUsername());
                 currentUser.setName(result.getName());
                 currentUser.setEmail(result.getEmail());
-
+                setNavInfo();
             } else {
                 showLoginError("Rosefire sign-in error");
             }
@@ -544,7 +542,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void switchToProfileFragment() {
-
+        loadProfileImage();
         ProfileFragment profileFragment = new ProfileFragment();
         Bundle args = new Bundle();
         args.putParcelable(Constants.USER, currentUser);
@@ -557,17 +555,15 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void switchToHomeFragment(String path) {
-        userRef.child(currentUser.getKey()).addValueEventListener(new ValueEventListener() {
+
+        userRef.child(currentUser.getKey()).child("phoneNumber").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                User user = dataSnapshot.getValue(User.class);
-                if(user.getPhoneNumber()==null){
-                    Log.d("datachanged", "onDataChange: "+currentUser.getKey());
+                Long phone = dataSnapshot.getValue(Long.class);
+                if(phone==null || phone==0){
                     showAddPhoneNumberDialog();
                 }
-                currentUser.setPhoneNumber(user.getPhoneNumber());
-                currentUser.setName(user.getName());
-                currentUser.setEmail(user.getEmail());
+                currentUser.setPhoneNumber(phone);
             }
 
             @Override
@@ -575,8 +571,8 @@ public class MainActivity extends AppCompatActivity
 
             }
         });
-        userRef.child(currentUser.getKey()).setValue(currentUser);
 
+        setNavInfo();
         loadProfileImage();
         mToolbar.setVisibility(View.VISIBLE);
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
@@ -588,6 +584,10 @@ public class MainActivity extends AppCompatActivity
         ft.commit();
     }
 
+    private void setNavInfo(){
+        navContactInfoTextView.setText(currentUser.getEmail());
+        navNameTextView.setText(currentUser.getName());
+    }
 
     private void showLoginError(String message) {
         LoginFragment loginFragment = (LoginFragment) getSupportFragmentManager().findFragmentByTag("Login");
