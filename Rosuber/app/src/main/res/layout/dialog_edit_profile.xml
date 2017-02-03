@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:padding="10dp"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:text="@string/edit_dialog_msg"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/edit_dialog_msg"
+        android:layout_marginTop="11dp"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+        android:textSize="16sp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="phone"
+        android:ems="10"
+        android:layout_marginTop="15dp"
+        android:id="@+id/edit_profile_phone_number"
+        android:hint="@string/update_your_number"
+        android:layout_below="@+id/edit_dialog_msg"
+        android:layout_alignLeft="@+id/edit_dialog_msg"
+        android:layout_alignStart="@+id/edit_dialog_msg"
+        android:layout_alignRight="@+id/edit_dialog_msg"
+        android:layout_alignEnd="@+id/edit_dialog_msg" />
+</RelativeLayout>

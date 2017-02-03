@@ -3,13 +3,10 @@ package edu.rosehulman.wangf.fengy2.rosuber.fragments;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.media.Image;
-import android.net.Uri;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
-import android.util.Log;
+import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,7 +15,6 @@ import android.widget.TextView;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FileDownloadTask;
@@ -40,7 +36,7 @@ public class ProfileFragment extends Fragment {
 
     private DatabaseReference mRef;
     private User mUser;
-    private UploadImageListener mListner;
+    private ProfileUpdateListener mListner;
     StorageReference imageRef = FirebaseStorage.getInstance().getReferenceFromUrl("gs://rosuber-android.appspot.com").child("images");
     private String imgaeFilePath = null;
 
@@ -66,6 +62,7 @@ public class ProfileFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle("Profile");
         getActivity().findViewById(R.id.fab).setVisibility(View.GONE);
         View rootView = inflater.inflate(R.layout.fragment_profile, container, false);
         TextView nameTextView = (TextView) rootView.findViewById(R.id.name_input_text_view);
@@ -75,7 +72,7 @@ public class ProfileFragment extends Fragment {
         editImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                mListner.onEditButtonPressed();
             }
         });
         nameTextView.setText(mUser.getName());
@@ -122,7 +119,7 @@ public class ProfileFragment extends Fragment {
     public void onAttach(Context context) {
         super.onAttach(context);
         if (context instanceof TripListFragment.TripListCallback) {
-            mListner = (ProfileFragment.UploadImageListener) context;
+            mListner = (ProfileUpdateListener) context;
         } else {
             throw new RuntimeException(context.toString()
                     + " must implement OnFragmentInteractionListener");
@@ -135,7 +132,8 @@ public class ProfileFragment extends Fragment {
         mListner = null;
     }
 
-    public interface UploadImageListener {
+    public interface ProfileUpdateListener {
         void onImageButtonPressed();
+        void onEditButtonPressed();
     }
 }

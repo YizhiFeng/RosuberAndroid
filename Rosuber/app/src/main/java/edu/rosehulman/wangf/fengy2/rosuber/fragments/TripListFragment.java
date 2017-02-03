@@ -3,6 +3,7 @@ package edu.rosehulman.wangf.fengy2.rosuber.fragments;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -29,6 +30,7 @@ public class TripListFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle("Available Trips");
         getActivity().findViewById(R.id.fab).setVisibility(View.VISIBLE);
         RecyclerView view = (RecyclerView)inflater.inflate(R.layout.fragment_trip_list, container, false);
         view.setLayoutManager(new LinearLayoutManager(getContext()));

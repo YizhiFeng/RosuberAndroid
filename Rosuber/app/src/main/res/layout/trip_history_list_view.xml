@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="5dp"
+    tools:ignore="MissingPrefix"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <android.support.v7.widget.CardView
+        android:layout_width="match_parent"
+        app:cardCornerRadius="6dp"
+        app:cardElevation="5dp"
+        android:layout_marginLeft="4dp"
+        android:layout_marginRight="4dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="4dp"
+        android:layout_height="wrap_content">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="10dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/trip_history_title"
+                android:text="@string/trip_detail"
+                android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+                android:textAlignment="viewStart"
+                android:gravity="start"
+                android:layout_toLeftOf="@+id/contact_info_image_view"
+                android:layout_toStartOf="@+id/contact_info_image_view" />
+
+            <View
+                android:id="@+id/divider"
+                android:background="@color/colorPrimaryDark"
+                android:layout_width = "match_parent"
+                android:layout_marginTop="7dp"
+                android:layout_below="@+id/trip_history_title"
+                android:layout_height="3dp" />
+
+            <TextView
+                android:text="@string/time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:layout_below="@+id/divider"
+                android:layout_marginTop="45dp"
+                android:id="@+id/time_view"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                android:textSize="18sp"
+                fontPath="fonts/Philosopher-Bold.ttf"/>
+
+            <TextView
+                android:text="@string/origin"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/origin_view"
+                android:layout_below="@+id/time_view"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:layout_marginTop="10dp"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                android:textSize="18sp"
+                fontPath="fonts/Philosopher-Bold.ttf"/>
+
+            <TextView
+                android:text="@string/destination"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/destination_view"
+                android:layout_below="@+id/origin_view"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:layout_marginTop="10dp"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                android:textSize="18sp"
+                fontPath="fonts/Philosopher-Bold.ttf"/>
+
+            <TextView
+                android:text="@string/driver"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:id="@+id/driver_view"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                android:textSize="18sp"
+                android:layout_below="@+id/destination_view"
+                fontPath="fonts/Philosopher-Bold.ttf"/>
+
+            <TextView
+                android:text="@string/passengers"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/passenger_view"
+                android:layout_below="@+id/driver_view"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:layout_marginTop="10dp"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                android:textSize="18sp"
+                fontPath="fonts/Philosopher-Bold.ttf" />
+
+            <TextView
+                android:text=""
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/passenger_input_view"
+                android:layout_below="@+id/passenger_view"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:layout_marginTop="10dp"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                android:textSize="18sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/time_input_view"
+                android:layout_alignParentTop="true"
+                android:layout_toRightOf="@+id/passenger_view"
+                android:layout_toEndOf="@+id/passenger_view"
+                android:layout_below="@+id/divider"
+                android:layout_marginTop="45dp"
+                android:layout_marginLeft="15dp"
+                android:layout_marginStart="15dp"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                android:textSize="18sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/origin_input_view"
+                android:layout_alignBottom="@+id/origin_view"
+                android:layout_alignLeft="@+id/time_input_view"
+                android:layout_alignStart="@+id/time_input_view"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                android:textSize="18sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/destination_input_view"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                android:textSize="18sp"
+                android:layout_above="@+id/driver_view"
+                android:layout_alignLeft="@+id/origin_input_view"
+                android:layout_alignStart="@+id/origin_input_view" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/driver_input_view"
+                android:layout_alignBaseline="@+id/driver_view"
+                android:layout_alignBottom="@+id/driver_view"
+                android:layout_alignLeft="@+id/destination_input_view"
+                android:layout_alignStart="@+id/destination_input_view"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                android:textSize="18sp" />
+
+            <TextView
+                android:text="@string/price"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/price_view"
+                android:layout_below="@+id/passenger_input_view"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:layout_marginTop="10dp"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                android:textSize="18sp"
+                fontPath="fonts/Philosopher-Bold.ttf"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/price_input_view"
+                android:layout_marginTop="3dp"
+                android:layout_below="@+id/passenger_input_view"
+                android:layout_alignTop="@+id/price_view"
+                android:layout_alignLeft="@+id/driver_input_view"
+                android:layout_alignStart="@+id/driver_input_view"
+                android:layout_alignBottom="@+id/price_view"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                android:textSize="16sp" />
+
+            <ImageView
+                app:srcCompat="@drawable/info_outline"
+                android:id="@+id/contact_info_image_view"
+                android:scaleType="centerCrop"
+                android:layout_width="33dp"
+                android:layout_height="33dp"
+                android:layout_above="@+id/divider"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true" />
+
+
+        </RelativeLayout>
+    </android.support.v7.widget.CardView>
+
+</RelativeLayout>

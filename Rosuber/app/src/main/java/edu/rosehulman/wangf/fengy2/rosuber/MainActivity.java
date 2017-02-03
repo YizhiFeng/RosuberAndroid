@@ -11,7 +11,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
@@ -68,13 +67,14 @@ import edu.rosehulman.wangf.fengy2.rosuber.fragments.HomePageFragment;
 import edu.rosehulman.wangf.fengy2.rosuber.fragments.LoginFragment;
 import edu.rosehulman.wangf.fengy2.rosuber.fragments.ProfileFragment;
 import edu.rosehulman.wangf.fengy2.rosuber.fragments.TripDetailFragment;
+import edu.rosehulman.wangf.fengy2.rosuber.fragments.TripHistoryFragment;
 import edu.rosehulman.wangf.fengy2.rosuber.fragments.TripListFragment;
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
-        TripListFragment.TripListCallback, LoginFragment.OnLoginListener, TripDetailFragment.OnJoinListener, ProfileFragment.UploadImageListener {
+        TripListFragment.TripListCallback, LoginFragment.OnLoginListener, TripDetailFragment.OnJoinListener, ProfileFragment.ProfileUpdateListener {
 
     private final static String PREFS = "PREFS";
     private static final int RC_ROSEFIRE_LOGIN = 1;
@@ -384,6 +384,7 @@ public class MainActivity extends AppCompatActivity
                 switchTo = mTripListFragment;
                 break;
             case R.id.nav_trip_history:
+                switchTo = new TripHistoryFragment();
                 break;
             case R.id.nav_about:
                 switchTo = new AboutFragment();
@@ -633,5 +634,25 @@ public class MainActivity extends AppCompatActivity
 
         Log.d("image", "onImageButtonPressed: ");
         startActivityForResult(chooserIntent, RC_SELECT_IMAGE);
+    }
+
+    @Override
+    public void onEditButtonPressed() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Update Your Information");
+        View view = getLayoutInflater().inflate(R.layout.dialog_edit_profile, null);
+        builder.setView(view);
+        final EditText phoneEditText = (EditText) view.findViewById(R.id.edit_profile_phone_number);
+        builder.setPositiveButton(R.string.update, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                currentUser.setPhoneNumber(Long.valueOf(phoneEditText.getText().toString()));
+//                Log.d("phone number", "onClick: "+currentUser.getKey());
+                userRef.child(currentUser.getKey()).setValue(currentUser);
+                switchToProfileFragment();
+            }
+        });
+        builder.setNegativeButton(android.R.string.cancel,null);
+        builder.create().show();
     }
 }

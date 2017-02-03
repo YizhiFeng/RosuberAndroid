@@ -34,4 +34,27 @@
     <string name="image_intent_title">Select or Take a new Picture</string>
     <string name="phone_dialog_title">Enter Your PhoneNumber To Complete Your Information</string>
     <string name="imageButton_help_text">Click Above to Upload</string>
+    <string name="time">Time:</string>
+    <string name="origin">Origin:</string>
+    <string name="destination">Destination:</string>
+    <string name="driver">Driver:</string>
+    <string name="passengers">Passengers:</string>
+    <string name="price">Price:</string>
+
+    <string name="update">UPDATE</string>
+    <string name="dialog_edit_profile_title">Update Your Phone Number</string>
+    <string name="trip_detail">Trip Detail</string>
+    <string name="update_your_number">Update Your Number</string>
+    <string name="edit_dialog_msg">You are only allowed to change your phone number</string>
+    <string name="phone_number">Phone Number</string>
+    <string name="name">Name</string>
+    <string name="email">Email</string>
+    <string name="time_detail">Time:</string>
+    <string name="origin_detail">Origin:</string>
+    <string name="destination_detail">Destination:</string>
+    <string name="driver_driver">Driver:</string>
+    <string name="passengers_detail">Passengers:</string>
+    <string name="price_detail">Price:</string>
+    <string name="join_button">Join!</string>
+    <string name="seats_left_detail">Seats Left:</string>
 </resources>

@@ -3,11 +3,14 @@ package edu.rosehulman.wangf.fengy2.rosuber.fragments;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+
+import org.w3c.dom.Text;
 
 import edu.rosehulman.wangf.fengy2.rosuber.MainActivity;
 import edu.rosehulman.wangf.fengy2.rosuber.R;
@@ -53,6 +56,7 @@ public class TripDetailFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle("Trip Detail");
         getActivity().findViewById(R.id.fab).setVisibility(View.GONE);
         View view = inflater.inflate(R.layout.fragment_trip_detail, container, false);
         //time
@@ -73,6 +77,11 @@ public class TripDetailFragment extends Fragment {
         //price
         TextView priceView = (TextView) view.findViewById(R.id.detail_price_input_text_view);
         priceView.setText(mTrip.getPrice()+"");
+
+        //seats left
+        TextView seatView = (TextView) view.findViewById(R.id.detail_capacity_input_text_view);
+        seatView.setText(mTrip.getCapacity()+"");
+
 
         //join button
         Button joinButton = (Button) view.findViewById(R.id.join_trip_buton);
