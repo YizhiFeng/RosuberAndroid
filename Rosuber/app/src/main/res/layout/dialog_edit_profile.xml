@@ -4,17 +4,6 @@
     android:padding="10dp"
     android:layout_height="match_parent">
 
-    <TextView
-        android:text="@string/edit_dialog_msg"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/edit_dialog_msg"
-        android:layout_marginTop="11dp"
-        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-        android:textSize="16sp"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true" />
-
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -28,4 +17,16 @@
         android:layout_alignStart="@+id/edit_dialog_msg"
         android:layout_alignRight="@+id/edit_dialog_msg"
         android:layout_alignEnd="@+id/edit_dialog_msg" />
+
+    <TextView
+        android:text="@string/edit_dialog_msg"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/edit_dialog_msg"
+        android:layout_marginTop="11dp"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+        android:textSize="16sp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
 </RelativeLayout>

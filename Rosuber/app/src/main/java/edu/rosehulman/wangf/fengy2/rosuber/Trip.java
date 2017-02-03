@@ -6,6 +6,8 @@ import android.os.Parcelable;
 import com.google.firebase.database.Exclude;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by wangf on 1/16/2017.
@@ -15,12 +17,33 @@ public class Trip implements Parcelable{
     private String origin;
     private String destination;
     private String driverKey;
-    private String passengerKey;
-//    private ArrayList? passengerKeys
+    private Map<String, Boolean> passengerKey = new HashMap<String, Boolean>();
     private String time;
     private long price;
     private long capacity;
     private String key;
+
+    protected Trip(Parcel in) {
+        origin = in.readString();
+        destination = in.readString();
+        driverKey = in.readString();
+        time = in.readString();
+        price = in.readLong();
+        capacity = in.readLong();
+        key = in.readString();
+    }
+
+    public static final Creator<Trip> CREATOR = new Creator<Trip>() {
+        @Override
+        public Trip createFromParcel(Parcel in) {
+            return new Trip(in);
+        }
+
+        @Override
+        public Trip[] newArray(int size) {
+            return new Trip[size];
+        }
+    };
 
     public String getOrigin() {
         return origin;
@@ -46,11 +69,11 @@ public class Trip implements Parcelable{
         this.driverKey = driverKey;
     }
 
-    public String getPassengerKey() {
+    public Map<String, Boolean> getPassengerKey() {
         return passengerKey;
     }
 
-    public void setPassengerKey(String passengerKey) {
+    public void setPassengerKey(Map<String, Boolean> passengerKey) {
         this.passengerKey = passengerKey;
     }
 
@@ -87,24 +110,13 @@ public class Trip implements Parcelable{
         this.key = key;
     }
 
+    public void addPassenger(String passenger){
+        this.passengerKey.put(passenger,true);
+    }
+
     public Trip(){
 
     }
-
-    protected Trip(Parcel in) {
-    }
-
-    public static final Creator<Trip> CREATOR = new Creator<Trip>() {
-        @Override
-        public Trip createFromParcel(Parcel in) {
-            return new Trip(in);
-        }
-
-        @Override
-        public Trip[] newArray(int size) {
-            return new Trip[size];
-        }
-    };
 
     @Override
     public int describeContents() {
@@ -113,6 +125,13 @@ public class Trip implements Parcelable{
 
     @Override
     public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeString(origin);
+        parcel.writeString(destination);
+        parcel.writeString(driverKey);
+        parcel.writeString(time);
+        parcel.writeLong(price);
+        parcel.writeLong(capacity);
+        parcel.writeString(key);
     }
 
     public void setValues(Trip trip) {

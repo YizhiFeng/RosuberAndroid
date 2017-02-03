@@ -25,7 +25,7 @@
     <string name="to_hint">I am going to</string>
     <string name="select_a_date">Select A Date</string>
     <string name="select_a_time">Select A Time</string>
-    <string name="capacity">Capacity (Number of passengers)</string>
+    <string name="capacity">Capacity (Number of passengers): </string>
     <string name="suggested_price">Suggested Price Per Passenger ($)</string>
     <string name="price_hint">e.g. 20</string>
 

@@ -191,7 +191,7 @@ public class MainActivity extends AppCompatActivity
         builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                trip.setPassengerKey(mAuth.getCurrentUser().getUid());
+                trip.addPassenger(mAuth.getCurrentUser().getUid());
                 mTripListFragment.getAdapter().editTrip(trip);
                 FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
                 ft.replace(R.id.fragment_container, mTripListFragment);
@@ -306,7 +306,7 @@ public class MainActivity extends AppCompatActivity
                     if(isDriverSwitch.isChecked()){
                         newTrip.setDriverKey(currentUser.getKey());
                     }else{
-                        newTrip.setPassengerKey(currentUser.getKey());
+                        newTrip.addPassenger(currentUser.getKey());
                     }
                     newTrip.setOrigin(originEditText.getText().toString());
                     newTrip.setDestination(destEditText.getText().toString());

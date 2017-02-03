@@ -1,6 +1,7 @@
 package edu.rosehulman.wangf.fengy2.rosuber;
 
 import android.content.Context;
+import android.provider.ContactsContract;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -16,6 +17,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 
 import org.w3c.dom.Text;
 
@@ -33,12 +35,15 @@ public class TripHistoryAdapter extends RecyclerView.Adapter<TripHistoryAdapter.
     private TripHistoryFragment.TripHistoryCallback mCallback;
     private ArrayList<Trip> mTrips = new ArrayList<>();
     private DatabaseReference mTripRef;
+    private DatabaseReference mUserRef;
+    private String passengers = "";
 
-    public TripHistoryAdapter(Context context, TripHistoryFragment.TripHistoryCallback callback){
+    public TripHistoryAdapter(Context context, TripHistoryFragment.TripHistoryCallback callback) {
         mContext = context;
         mCallback = callback;
         mTripRef = FirebaseDatabase.getInstance().getReference().child("trips");
         mTripRef.addChildEventListener(new TripsHistoryChildEventListener());
+        mUserRef = FirebaseDatabase.getInstance().getReference().child("users");
     }
 
     @Override
@@ -48,15 +53,48 @@ public class TripHistoryAdapter extends RecyclerView.Adapter<TripHistoryAdapter.
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    public void onBindViewHolder(final ViewHolder holder, int position) {
         Trip trip = mTrips.get(position);
         holder.mDestinationTextView.setText(trip.getDestination());
         holder.mTimeTextView.setText(trip.getTime());
         holder.mOriginTextView.setText(trip.getOrigin());
-        holder.mDriverTextView.setText(trip.getDriverKey());
-        holder.mPriceTextView.setText(trip.getPrice()+"");
-        //to be changed
-        holder.mPassengersTextView.setText(trip.getPassengerKey());
+        holder.mPriceTextView.setText(trip.getPrice() + "");
+
+        if (trip.getDriverKey() != null) {
+            mUserRef.child(trip.getDriverKey()).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    User user = dataSnapshot.getValue(User.class);
+                    holder.mDriverTextView.setText(user.getName());
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+        }
+
+        passengers = "";
+
+        if(trip.getPassengerKey().size()!=0) {
+            for (String key : trip.getPassengerKey().keySet()) {
+
+                mUserRef.child(key).addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        User user = dataSnapshot.getValue(User.class);
+                        passengers += user.getName() + "  ";
+                        holder.mPassengersTextView.setText(holder.mPassengersTextView.getText().toString() + user.getName() + ", ");
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+            }
+        }
 
         // to be filled
         holder.mInfoButton.setOnClickListener(new View.OnClickListener() {
@@ -72,7 +110,7 @@ public class TripHistoryAdapter extends RecyclerView.Adapter<TripHistoryAdapter.
         return mTrips.size();
     }
 
-    class ViewHolder extends RecyclerView.ViewHolder{
+    class ViewHolder extends RecyclerView.ViewHolder {
         TextView mTimeTextView;
         TextView mDestinationTextView;
         TextView mOriginTextView;
@@ -81,25 +119,25 @@ public class TripHistoryAdapter extends RecyclerView.Adapter<TripHistoryAdapter.
         TextView mPriceTextView;
         ImageView mInfoButton;
 
-    public ViewHolder(View itemView) {
-        super(itemView);
-        mTimeTextView = (TextView) itemView.findViewById(R.id.time_input_view);
-        mDestinationTextView = (TextView) itemView.findViewById(R.id.destination_input_view);
-        mOriginTextView = (TextView) itemView.findViewById(R.id.origin_input_view);
-        mDriverTextView = (TextView) itemView.findViewById(R.id.driver_input_view);
-        mPassengersTextView = (TextView) itemView.findViewById(R.id.passenger_input_view);
-        mPriceTextView = (TextView) itemView.findViewById(R.id.price_input_view);
-        mInfoButton = (ImageView) itemView.findViewById(R.id.contact_info_image_view);
+        public ViewHolder(View itemView) {
+            super(itemView);
+            mTimeTextView = (TextView) itemView.findViewById(R.id.time_input_view);
+            mDestinationTextView = (TextView) itemView.findViewById(R.id.destination_input_view);
+            mOriginTextView = (TextView) itemView.findViewById(R.id.origin_input_view);
+            mDriverTextView = (TextView) itemView.findViewById(R.id.driver_input_view);
+            mPassengersTextView = (TextView) itemView.findViewById(R.id.passenger_input_view);
+            mPriceTextView = (TextView) itemView.findViewById(R.id.price_input_view);
+            mInfoButton = (ImageView) itemView.findViewById(R.id.contact_info_image_view);
+        }
     }
-}
 
-    class TripsHistoryChildEventListener implements ChildEventListener{
+    class TripsHistoryChildEventListener implements ChildEventListener {
 
         @Override
         public void onChildAdded(DataSnapshot dataSnapshot, String s) {
             Trip trip = dataSnapshot.getValue(Trip.class);
             trip.setKey(dataSnapshot.getKey());
-            mTrips.add(0,trip);
+            mTrips.add(0, trip);
             notifyDataSetChanged();
         }
 
@@ -107,8 +145,8 @@ public class TripHistoryAdapter extends RecyclerView.Adapter<TripHistoryAdapter.
         public void onChildChanged(DataSnapshot dataSnapshot, String s) {
             String key = dataSnapshot.getKey();
             Trip trip = dataSnapshot.getValue(Trip.class);
-            for(Trip t: mTrips){
-                if(key.equals(t.getKey())){
+            for (Trip t : mTrips) {
+                if (key.equals(t.getKey())) {
                     t.setValues(trip);
                     notifyDataSetChanged();
                 }
@@ -118,8 +156,8 @@ public class TripHistoryAdapter extends RecyclerView.Adapter<TripHistoryAdapter.
         @Override
         public void onChildRemoved(DataSnapshot dataSnapshot) {
             String key = dataSnapshot.getKey();
-            for(Trip trip: mTrips){
-                if(key.equals(trip.getKey())){
+            for (Trip trip : mTrips) {
+                if (key.equals(trip.getKey())) {
                     mTrips.remove(trip);
                     notifyDataSetChanged();
                     return;
@@ -134,7 +172,7 @@ public class TripHistoryAdapter extends RecyclerView.Adapter<TripHistoryAdapter.
 
         @Override
         public void onCancelled(DatabaseError databaseError) {
-            Log.e("TAG", "DB error "+databaseError);
+            Log.e("TAG", "DB error " + databaseError);
         }
     }
 }
