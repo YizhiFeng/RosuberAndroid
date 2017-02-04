@@ -106,7 +106,7 @@ public class TripHistoryAdapter extends RecyclerView.Adapter<TripHistoryAdapter.
         holder.mInfoButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mCallback.onContactInfoButtonClicked(trip.getDriverKey());
+                mCallback.onContactInfoButtonClicked(trip.getDriverKey(), trip.getPassengerKey());
             }
         });
 

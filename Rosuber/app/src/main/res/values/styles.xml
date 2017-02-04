@@ -9,7 +9,7 @@
         <item name="colorAccent">@color/colorAccent</item>
         <!--<item name="textColorPrimary">@color/textColorPrimary</item>-->
         <!--<item name="textColorSecondary">@color/textColorSecondary</item>-->
-        <item name="android:icon">@color/icons</item>
+        <item name="android:icon">@color/white</item>
         <item name="android:textViewStyle">@style/AppTheme.Widget.TextView</item>
     </style>
 

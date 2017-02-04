@@ -38,6 +38,7 @@ import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.TimePicker;
+import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -69,6 +70,7 @@ import edu.rosehulman.rosefire.RosefireResult;
 import edu.rosehulman.wangf.fengy2.rosuber.fragments.AboutFragment;
 import edu.rosehulman.wangf.fengy2.rosuber.fragments.HomePageFragment;
 import edu.rosehulman.wangf.fengy2.rosuber.fragments.LoginFragment;
+import edu.rosehulman.wangf.fengy2.rosuber.fragments.MyTripContactFragment;
 import edu.rosehulman.wangf.fengy2.rosuber.fragments.ProfileFragment;
 import edu.rosehulman.wangf.fengy2.rosuber.fragments.TripDetailFragment;
 import edu.rosehulman.wangf.fengy2.rosuber.fragments.TripHistoryFragment;
@@ -78,15 +80,16 @@ import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, TripHistoryFragment.TripHistoryCallback,
-        TripListFragment.TripListCallback, LoginFragment.OnLoginListener, TripDetailFragment.OnJoinListener, ProfileFragment.ProfileUpdateListener {
+        TripListFragment.TripListCallback, LoginFragment.OnLoginListener, TripDetailFragment.OnJoinListener,
+        ProfileFragment.ProfileUpdateListener, MyTripContactFragment.OnContactListener {
 
     private final static String PREFS = "PREFS";
     private static final int RC_ROSEFIRE_LOGIN = 1;
     private static final int RC_SELECT_IMAGE = 2;
     private static final String KEY_USER_NAME = "USER_NAME";
-    private static final String KEY_USER_KEY= "USER_KEY";
-    private static final String KEY_USER_EMAIL= "USER_EMAIL";
-    private static final String KEY_USER_PHONE= "USER_PHONE";
+    private static final String KEY_USER_KEY = "USER_KEY";
+    private static final String KEY_USER_EMAIL = "USER_EMAIL";
+    private static final String KEY_USER_PHONE = "USER_PHONE";
     FloatingActionButton mFab;
     FirebaseAuth mAuth;
     FirebaseAuth.AuthStateListener mAuthStateListener;
@@ -135,10 +138,10 @@ public class MainActivity extends AppCompatActivity
 
         SharedPreferences prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
         currentUser = new User();
-        currentUser.setKey(prefs.getString(KEY_USER_KEY,null));
-        currentUser.setEmail(prefs.getString(KEY_USER_EMAIL,null));
-        currentUser.setName(prefs.getString(KEY_USER_NAME,null));
-        currentUser.setPhoneNumber(prefs.getLong(KEY_USER_PHONE,0));
+        currentUser.setKey(prefs.getString(KEY_USER_KEY, null));
+        currentUser.setEmail(prefs.getString(KEY_USER_EMAIL, null));
+        currentUser.setName(prefs.getString(KEY_USER_NAME, null));
+        currentUser.setPhoneNumber(prefs.getLong(KEY_USER_PHONE, 0));
 
         mAuth = FirebaseAuth.getInstance();
         initializeListeners();
@@ -151,8 +154,9 @@ public class MainActivity extends AppCompatActivity
         navNameTextView.setText(currentUser.getName());
         navContactInfoTextView = (TextView) navigationView.getHeaderView(0).findViewById(R.id.nav_contact_info_text);
         navContactInfoTextView.setText(currentUser.getEmail());
-
-        loadProfileImage();
+        if (currentUser.getKey() != null) {
+            loadProfileImage();
+        }
     }
 
     private void initializeListeners() {
@@ -178,13 +182,13 @@ public class MainActivity extends AppCompatActivity
         };
     }
 
-    public void joinTripConfirmDialog(final Trip trip){
+    public void joinTripConfirmDialog(final Trip trip) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Join This Trip As The Following Role");
         long capacity = trip.getCapacity();
-        final int seatsLeft = (int)capacity-trip.getPassengerKey().size();
-        if(trip.getDriverKey()==null){
-            if(seatsLeft<=0){
+        final int seatsLeft = (int) capacity - trip.getPassengerKey().size();
+        if (trip.getDriverKey() == null) {
+            if (seatsLeft <= 0) {
                 String[] sel = new String[]{"Driver"};
                 builder.setSingleChoiceItems(sel, -1, new DialogInterface.OnClickListener() {
                     @Override
@@ -193,31 +197,33 @@ public class MainActivity extends AppCompatActivity
 
                     }
                 });
-            }else{
-            String[] selections = new String[]{"Passenger","Driver"};
-            builder.setSingleChoiceItems(selections, -1, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    if(i==1){
-                        trip.setDriverKey(currentUser.getKey());
+            } else {
+                String[] selections = new String[]{"Passenger", "Driver"};
+                builder.setSingleChoiceItems(selections, -1, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        if (i == 1) {
+                            trip.setDriverKey(currentUser.getKey());
 
-                    }else{
-                        trip.addPassenger(currentUser.getKey());
+                        } else {
+                            trip.addPassenger(currentUser.getKey());
+                        }
                     }
-                }
-            });}
-        }else{
-            if(seatsLeft<=0){
+                });
+            }
+        } else {
+            if (seatsLeft <= 0) {
                 builder.setMessage("This trip is full! You can't join!");
                 builder.setTitle("Sorry!");
-            }else{
-            String[] selection = new String[]{"Passenger"};
-            builder.setSingleChoiceItems(selection, -1, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    trip.addPassenger(currentUser.getKey());
-                }
-            });}
+            } else {
+                String[] selection = new String[]{"Passenger"};
+                builder.setSingleChoiceItems(selection, -1, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        trip.addPassenger(currentUser.getKey());
+                    }
+                });
+            }
         }
 
 
@@ -239,10 +245,11 @@ public class MainActivity extends AppCompatActivity
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         View view = getLayoutInflater().inflate(R.layout.dialog_add, null);
         builder.setView(view);
-        if(isEditing){
+        if (isEditing) {
             builder.setTitle("Update Trip");
-        }else{
-        builder.setTitle(R.string.add_a_trip);}
+        } else {
+            builder.setTitle(R.string.add_a_trip);
+        }
         final Switch isDriverSwitch = (Switch) view.findViewById(R.id.isDriverSwitch);
         final TextView isDriverTextView = (TextView) view.findViewById(R.id.isDriverTextView);
         final EditText originEditText = (EditText) view.findViewById(R.id.orginEditText);
@@ -252,20 +259,20 @@ public class MainActivity extends AppCompatActivity
         Button timeButton = (Button) view.findViewById(R.id.timeButton);
         final TextView timeTextView = (TextView) view.findViewById(R.id.timeTextView);
         final SeekBar numPassengerSBar = (SeekBar) view.findViewById(R.id.seek_bar);
-        final TextView capacityTextView = (TextView)view.findViewById(R.id.capacityTextView);
+        final TextView capacityTextView = (TextView) view.findViewById(R.id.capacityTextView);
         final EditText priceEditText = (EditText) view.findViewById(R.id.priceEditText);
 
-        if(isEditing){
+        if (isEditing) {
             final boolean isDriver;
-            if(trip.getDriverKey()!=null){
-              isDriver = trip.getDriverKey().equals(currentUser.getKey())? true:false;}
-            else{
-                isDriver= false;
+            if (trip.getDriverKey() != null) {
+                isDriver = trip.getDriverKey().equals(currentUser.getKey()) ? true : false;
+            } else {
+                isDriver = false;
             }
 
-            if(isDriver){
+            if (isDriver) {
                 isDriverTextView.setText(R.string.i_am_a_driver);
-            }else{
+            } else {
                 isDriverTextView.setText(R.string.i_am_a_passenger);
             }
             String[] timeArray = trip.getTime().split(" ");
@@ -275,21 +282,21 @@ public class MainActivity extends AppCompatActivity
             dateTextView.setText(timeArray[0]);
             timeTextView.setText(timeArray[1]);
             numPassengerSBar.setProgress((int) trip.getCapacity());
-            capacityTextView.setText(trip.getCapacity()+"");
-            priceEditText.setText((int)trip.getPrice()+"");
+            capacityTextView.setText(trip.getCapacity() + "");
+            priceEditText.setText((int) trip.getPrice() + "");
             builder.setNeutralButton(R.string.leave, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {
-                    if(isDriver){
+                    if (isDriver) {
 //                        tripRef.child(trip.getKey()+"/driverKey").removeValue();
                         trip.setDriverKey(null);
                         mTripHistoryFragment.getAdapter().editTrip(trip);
-                    }else{
+                    } else {
 //                        tripRef.child(trip.getKey()+"/passengerKey").child(currentUser.getKey()).removeValue();
                         Map<String, Boolean> newPass = new HashMap<>();
-                        for(String pass: trip.getPassengerKey().keySet()){
-                            if(!pass.equals(currentUser.getKey())){
-                                newPass.put(pass,true);
+                        for (String pass : trip.getPassengerKey().keySet()) {
+                            if (!pass.equals(currentUser.getKey())) {
+                                newPass.put(pass, true);
                             }
                         }
                         trip.setPassengerKey(newPass);
@@ -353,7 +360,7 @@ public class MainActivity extends AppCompatActivity
         numPassengerSBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-                capacityTextView.setText(""+i);
+                capacityTextView.setText("" + i);
             }
 
             @Override
@@ -377,21 +384,21 @@ public class MainActivity extends AppCompatActivity
                 if (isEditing) {
                     trip.setOrigin(originEditText.getText().toString());
                     trip.setDestination(destEditText.getText().toString());
-                    trip.setTime(dateTextView.getText().toString()+" "+timeTextView.getText().toString());
+                    trip.setTime(dateTextView.getText().toString() + " " + timeTextView.getText().toString());
                     trip.setPrice(Long.parseLong(priceEditText.getText().toString()));
                     trip.setCapacity(numPassengerSBar.getProgress());
                     mTripHistoryFragment.getAdapter().editTrip(trip);
                     switchToHistoryFragment();
                 } else {
                     Trip newTrip = new Trip();
-                    if(isDriverSwitch.isChecked()){
+                    if (isDriverSwitch.isChecked()) {
                         newTrip.setDriverKey(currentUser.getKey());
-                    }else{
+                    } else {
                         newTrip.addPassenger(currentUser.getKey());
                     }
                     newTrip.setOrigin(originEditText.getText().toString());
                     newTrip.setDestination(destEditText.getText().toString());
-                    newTrip.setTime(dateTextView.getText().toString()+" "+timeTextView.getText().toString());
+                    newTrip.setTime(dateTextView.getText().toString() + " " + timeTextView.getText().toString());
                     newTrip.setPrice(Long.parseLong(priceEditText.getText().toString()));
                     newTrip.setCapacity(numPassengerSBar.getProgress());
                     mTripListFragment.getAdapter().addTrip(newTrip);
@@ -405,7 +412,7 @@ public class MainActivity extends AppCompatActivity
         mFab.setVisibility(View.GONE);
         mTripHistoryFragment = new TripHistoryFragment();
         Bundle arg = new Bundle();
-        arg.putParcelable(Constants.USER,currentUser);
+        arg.putParcelable(Constants.USER, currentUser);
         mTripHistoryFragment.setArguments(arg);
 
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
@@ -431,6 +438,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
+        super.onCreateOptionsMenu(menu);
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
@@ -479,7 +487,7 @@ public class MainActivity extends AppCompatActivity
             case R.id.nav_trip_history:
                 mTripHistoryFragment = new TripHistoryFragment();
                 Bundle arg = new Bundle();
-                arg.putParcelable(Constants.USER,currentUser);
+                arg.putParcelable(Constants.USER, currentUser);
                 mTripHistoryFragment.setArguments(arg);
                 switchTo = mTripHistoryFragment;
                 break;
@@ -513,6 +521,43 @@ public class MainActivity extends AppCompatActivity
         ft.commit();
     }
 
+    @Override
+    public void onTripSearch() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        View view = getLayoutInflater().inflate(R.layout.dialog_search, null);
+        builder.setView(view);
+        builder.setTitle(getString(R.string.search_dialog_title));
+
+        final EditText originEditText = (EditText) view.findViewById(R.id.search_origin);
+        final EditText destEditText = (EditText) view.findViewById(R.id.search_dest);
+
+
+        builder.setNeutralButton(getString(R.string.search_dialog_netural), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                mTripListFragment.getAdapter().toggle(null, null);
+            }
+        });
+
+        final Activity activity = this;
+
+        builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                String origin = originEditText.getText().toString();
+                String dest = destEditText.getText().toString();
+                if (origin.isEmpty() || dest.isEmpty()) {
+                    Toast.makeText(activity, getString(R.string.invalid_search_toast),
+                            Toast.LENGTH_LONG).show();
+                } else {
+                    mTripListFragment.getAdapter().toggle(origin, dest);
+                }
+            }
+        });
+        builder.create().show();
+
+    }
+
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, final Intent data) {
@@ -531,7 +576,7 @@ public class MainActivity extends AppCompatActivity
             } else {
                 showLoginError("Rosefire sign-in error");
             }
-        }else if(requestCode == RC_SELECT_IMAGE && resultCode == Activity.RESULT_OK){
+        } else if (requestCode == RC_SELECT_IMAGE && resultCode == Activity.RESULT_OK) {
             if (data == null) {
                 //Display an error
                 Log.d(Constants.TAG, "onActivityResult: image selection");
@@ -551,7 +596,7 @@ public class MainActivity extends AppCompatActivity
                     public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                         // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
                         Uri downloadUrl = taskSnapshot.getDownloadUrl();
-                        Log.d("upload image", "onSuccess: "+downloadUrl);
+                        Log.d("upload image", "onSuccess: " + downloadUrl);
                         switchToProfileFragment();
                     }
                 });
@@ -561,7 +606,7 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    private void loadProfileImage(){
+    private void loadProfileImage() {
         StorageReference profileImageRef = imageRef.child(currentUser.getKey());
 
         File localFile = null;
@@ -597,7 +642,7 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 currentUser.setPhoneNumber(Long.valueOf(phoneEditText.getText().toString()));
-                Log.d("phone number", "onClick: "+currentUser.getKey());
+                Log.d("phone number", "onClick: " + currentUser.getKey());
                 userRef.child(currentUser.getKey()).setValue(currentUser);
             }
         });
@@ -631,7 +676,8 @@ public class MainActivity extends AppCompatActivity
         mToolbar.setVisibility(View.GONE);
         mFab.setVisibility(View.GONE);
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        ft.replace(R.id.fragment_container, new LoginFragment(), "login");
+        ft.replace(R.id.fragment_container, new LoginFragment());
+        ft.addToBackStack("login");
         ft.commit();
     }
 
@@ -641,10 +687,10 @@ public class MainActivity extends AppCompatActivity
         Bundle args = new Bundle();
         args.putParcelable(Constants.USER, currentUser);
         profileFragment.setArguments(args);
-
         mFab.setVisibility(View.GONE);
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        ft.replace(R.id.fragment_container, profileFragment, "login");
+        ft.replace(R.id.fragment_container, profileFragment);
+        ft.addToBackStack("profile");
         ft.commit();
     }
 
@@ -654,7 +700,7 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Long phone = dataSnapshot.getValue(Long.class);
-                if(phone==null || phone==0){
+                if (phone == null || phone == 0) {
                     showAddPhoneNumberDialog();
                 }
                 currentUser.setPhoneNumber(phone);
@@ -674,11 +720,12 @@ public class MainActivity extends AppCompatActivity
         Bundle args = new Bundle();
         args.putString(Constants.ROSEFIRE_PATH, path);
         homeFragment.setArguments(args);
-        ft.replace(R.id.fragment_container, homeFragment, "home");
+        ft.replace(R.id.fragment_container, homeFragment);
+        ft.addToBackStack("home");
         ft.commit();
     }
 
-    private void setNavInfo(){
+    private void setNavInfo() {
         navContactInfoTextView.setText(currentUser.getEmail());
         navNameTextView.setText(currentUser.getName());
     }
@@ -693,12 +740,13 @@ public class MainActivity extends AppCompatActivity
         super.onPause();
         SharedPreferences prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
-        if(currentUser!=null){
-        editor.putString(KEY_USER_KEY, currentUser.getKey());
-        editor.putString(KEY_USER_EMAIL, currentUser.getEmail());
-        editor.putString(KEY_USER_NAME, currentUser.getName());
+        if (currentUser != null) {
+            editor.putString(KEY_USER_KEY, currentUser.getKey());
+            editor.putString(KEY_USER_EMAIL, currentUser.getEmail());
+            editor.putString(KEY_USER_NAME, currentUser.getName());
 //        if(currentUser.getPhoneNumber()!=null){
-        editor.putLong(KEY_USER_PHONE, currentUser.getPhoneNumber());}
+            editor.putLong(KEY_USER_PHONE, currentUser.getPhoneNumber());
+        }
 
         // Put the other fields into the editor
         editor.commit();
@@ -722,7 +770,7 @@ public class MainActivity extends AppCompatActivity
         chooserIntent.putExtra
                 (
                         Intent.EXTRA_INITIAL_INTENTS,
-                        new Intent[] { takePhotoIntent }
+                        new Intent[]{takePhotoIntent}
                 );
 
         Log.d("image", "onImageButtonPressed: ");
@@ -745,84 +793,58 @@ public class MainActivity extends AppCompatActivity
                 switchToProfileFragment();
             }
         });
-        builder.setNegativeButton(android.R.string.cancel,null);
+        builder.setNegativeButton(android.R.string.cancel, null);
         builder.create().show();
     }
 
     @Override
     public void onEditTripClicked(Trip trip) {
-        addEditTripDialog(true,trip);
+        addEditTripDialog(true, trip);
     }
 
     @Override
-    public void onContactInfoButtonClicked(String driverKey) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Contact Information");
-        View view = getLayoutInflater().inflate(R.layout.dialog_contact_info,null);
-        builder.setView(view);
+    public void onContactInfoButtonClicked(String driverKey, Map<String, Boolean> passengerKeys) {
+        MyTripContactFragment myTripContactFragment = new MyTripContactFragment();
+        Bundle args = new Bundle();
+        args.putString(Constants.DRIVER_KEY, driverKey);
+        args.putStringArray(Constants.PASSENGER_KEYS, (passengerKeys.keySet()).toArray(new String[passengerKeys.size()]));
+        myTripContactFragment.setArguments(args);
+        mFab.setVisibility(View.GONE);
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        ft.replace(R.id.fragment_container, myTripContactFragment);
+        ft.addToBackStack("contactInfo");
+        ft.commit();
+    }
 
-        //captures
-        final TextView driverPhoneTextView = (TextView) view.findViewById(R.id.driver_phone_input_text_view);
-        final TextView driverEmailTextView = (TextView) view.findViewById(R.id.driver_email_input_text_view);
-        final ImageButton driverPhoneImageButton = (ImageButton) view.findViewById(R.id.driver_phone_button);
-        ImageButton driverEmailImageButton = (ImageButton) view.findViewById(R.id.driver_email_button);
+    @Override
+    public void onMessage(String receiver) {
+        Activity activity = this;
+        if (receiver == null || receiver.isEmpty() || receiver.equals("N/A")) {
+            Toast.makeText(activity, getString(R.string.invalid_phone_number),
+                    Toast.LENGTH_LONG).show();
+        } else {
+            Intent smsIntent = new Intent(Intent.ACTION_VIEW);
+            smsIntent.setType("vnd.android-dir/mms-sms");
+            smsIntent.putExtra("address", receiver);
+            startActivity(smsIntent);
+        }
+    }
 
-
-        userRef.child(driverKey+"/phoneNumber").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                Long phone = dataSnapshot.getValue(Long.class);
-                driverPhoneTextView.setText(phone+"");
+    @Override
+    public void onEmail(String receiver) {
+        Activity activity = this;
+        if (receiver == null || receiver.isEmpty() || receiver.equals("N/A")) {
+            Toast.makeText(activity, getString(R.string.invalid_email),
+                    Toast.LENGTH_LONG).show();
+        } else {
+            Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
+            emailIntent.setData(Uri.parse("mailto:")); // only email apps should handle this
+            emailIntent.putExtra(Intent.EXTRA_EMAIL, receiver);
+            emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Rosuber Trip");
+            try {
+                startActivity(emailIntent);
+            } catch (ActivityNotFoundException e) {
             }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-
-        userRef.child(driverKey+"/email").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                String email = dataSnapshot.getValue(String.class);
-                driverEmailTextView.setText(email);
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-
-        driverEmailImageButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                //start email app
-                Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
-                emailIntent.setData(Uri.parse("mailto:")); // only email apps should handle this
-                emailIntent.putExtra(Intent.EXTRA_EMAIL, driverEmailTextView.getText().toString());
-                emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Rosuber Trip");
-
-                try {
-                    startActivity(emailIntent);
-                } catch (ActivityNotFoundException e) {
-                    //TODO: Handle case where no email app is available
-                }
-            }
-        });
-
-        driverPhoneImageButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                //start message app
-                Intent smsIntent = new Intent(Intent.ACTION_VIEW);
-                smsIntent.setType("vnd.android-dir/mms-sms");
-                smsIntent.putExtra("address", driverPhoneTextView.getText().toString());
-                startActivity(smsIntent);
-            }
-        });
-
-        builder.setPositiveButton(android.R.string.ok,null);
-        builder.create().show();
+        }
     }
 }

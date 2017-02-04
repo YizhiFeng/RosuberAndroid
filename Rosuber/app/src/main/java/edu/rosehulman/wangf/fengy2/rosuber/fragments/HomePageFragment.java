@@ -1,10 +1,13 @@
 package edu.rosehulman.wangf.fengy2.rosuber.fragments;
 
 import android.os.Bundle;
+import android.support.design.internal.NavigationMenu;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -44,6 +47,11 @@ public class HomePageFragment extends Fragment {
                              Bundle savedInstanceState) {
         ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle("Rosuber");
         getActivity().findViewById(R.id.fab).setVisibility(View.GONE);
+//        NavigationView navigationView = (NavigationView) getActivity().findViewById(R.id.action_search);
+//        navigationView.getMenu().findItem(R.id.login).setVisible(false);
+//        Menu menu = (Menu) getActivity().findViewById(R.id.menuView);
+//        menu.getItem(99).setVisible(true);
+
         View rootView = inflater.inflate(R.layout.fragment_homepage, container, false);
         TextView textView = (TextView) rootView.findViewById(R.id.homepageText);
 //        textView.setText("");

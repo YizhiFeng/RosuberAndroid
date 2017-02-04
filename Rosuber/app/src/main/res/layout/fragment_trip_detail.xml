@@ -213,7 +213,7 @@
         android:layout_height="wrap_content"
         android:id="@+id/join_trip_buton"
         android:background="@color/colorPrimary"
-        android:textColor="@color/icons"
+        android:textColor="@color/white"
         android:layout_below="@+id/detail_capacity_input_text_view"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="40dp" />

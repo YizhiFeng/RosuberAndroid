@@ -40,13 +40,6 @@ public class TripDetailFragment extends Fragment {
 
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param trip trip.
-     * @return A new instance of fragment TripDetailFragment.
-     */
     public static TripDetailFragment newInstance(Trip trip) {
         TripDetailFragment fragment = new TripDetailFragment();
         Bundle args = new Bundle();
@@ -98,7 +91,7 @@ public class TripDetailFragment extends Fragment {
 
         //passenger
         final TextView passengerView = (TextView) view.findViewById(R.id.detail_passenger_input_text_view);
-        if(mTrip.getPassengerKey().size()!=0){
+        if (mTrip.getPassengerKey().size() != 0) {
             for (String key : mTrip.getPassengerKey().keySet()) {
                 mUserRef.child(key).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
@@ -126,7 +119,7 @@ public class TripDetailFragment extends Fragment {
         //seats left
         TextView seatView = (TextView) view.findViewById(R.id.detail_capacity_input_text_view);
         long seats = mTrip.getCapacity() - mTrip.getPassengerKey().keySet().size();
-        if(seats<0){
+        if (seats < 0) {
             seats = 0;
         }
         seatView.setText(seats + "");
@@ -146,11 +139,11 @@ public class TripDetailFragment extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof TripListFragment.TripListCallback) {
-            mListener = (TripDetailFragment.OnJoinListener) context;
+        if (context instanceof OnJoinListener) {
+            mListener = (OnJoinListener) context;
         } else {
             throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
+                    + " must implement OnContactListener");
         }
     }
 

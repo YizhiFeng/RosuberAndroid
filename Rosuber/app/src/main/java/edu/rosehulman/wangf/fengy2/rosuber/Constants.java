@@ -13,4 +13,6 @@ public class Constants {
     public static final String EMAIL = "EMAIL";
     public static final String USER = "USER";
     public static final String AUTH = "AUTH";
+    public static final String DRIVER_KEY = "DRIVER_KEY";
+    public static final String PASSENGER_KEYS = "PASSENGER_KEYS";
 }

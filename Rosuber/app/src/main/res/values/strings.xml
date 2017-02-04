@@ -59,4 +59,12 @@
     <string name="seats_left_detail">Seats Left:</string>
 
     <string name="leave">Leave Trip</string>
+    <string name="action_search">Search</string>
+    <string name="origin_required">Origin (Required)</string>
+    <string name="desination_required">Desination (Required)</string>
+    <string name="search_dialog_title">Search Trips</string>
+    <string name="invalid_search_toast">Please enter both inputs</string>
+    <string name="search_dialog_netural">SHOW ALL TRIPS</string>
+    <string name="invalid_phone_number">Driver has not updated his/her phone number</string>
+    <string name="invalid_email">Driver not found</string>
 </resources>

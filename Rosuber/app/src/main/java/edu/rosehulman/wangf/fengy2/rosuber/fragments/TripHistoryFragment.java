@@ -12,6 +12,8 @@ import android.view.ViewGroup;
 
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.util.Map;
+
 import edu.rosehulman.wangf.fengy2.rosuber.Constants;
 import edu.rosehulman.wangf.fengy2.rosuber.R;
 import edu.rosehulman.wangf.fengy2.rosuber.Trip;
@@ -59,7 +61,7 @@ public class TripHistoryFragment extends Fragment {
             mCallback = (TripHistoryCallback) context;
         } else {
             throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
+                    + " must implement OnContactListener");
         }
     }
 
@@ -75,6 +77,6 @@ public class TripHistoryFragment extends Fragment {
 
     public interface TripHistoryCallback {
         void onEditTripClicked(Trip trip);
-        void onContactInfoButtonClicked(String driverKey);
+        void onContactInfoButtonClicked(String driverKey, Map<String,Boolean> passengerKeys);
     }
 }

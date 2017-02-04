@@ -27,7 +27,7 @@
         android:layout_height="wrap_content"
         android:paddingTop="@dimen/nav_header_vertical_spacing"
         android:text="@string/name_text_default"
-        android:textColor="@color/icons"
+        android:textColor="@color/white"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1"
         style="@style/AppTheme.Widget.TextView" />
 
@@ -35,7 +35,7 @@
         android:id="@+id/nav_contact_info_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="@color/icons"
+        android:textColor="@color/white"
         android:text="@string/contact_info_text_default" />
 
 </LinearLayout>

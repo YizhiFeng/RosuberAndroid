@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -24,7 +25,7 @@ public class TripListFragment extends Fragment {
     private TripListAdapter madapter;
 
     public TripListFragment(){
-
+        setHasOptionsMenu(true);
     }
 
     @Override
@@ -41,13 +42,22 @@ public class TripListFragment extends Fragment {
     }
 
     @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if(item.getItemId()==R.id.action_search){
+            mCallback.onTripSearch();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
     public void onAttach(Context context) {
         super.onAttach(context);
         if (context instanceof TripListCallback) {
             mCallback = (TripListCallback) context;
         } else {
             throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
+                    + " must implement OnContactListener");
         }
     }
 
@@ -63,5 +73,6 @@ public class TripListFragment extends Fragment {
 
     public interface TripListCallback {
         void onTripSelected(Trip trip);
+        void onTripSearch();
     }
 }

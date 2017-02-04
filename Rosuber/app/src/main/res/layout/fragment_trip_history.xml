@@ -2,7 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/icons"
+    android:background="@color/white"
     android:paddingTop="5dp"
     tools:context=".fragments.TripHistoryFragment">
 

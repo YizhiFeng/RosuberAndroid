@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <AutoCompleteTextView
+        android:id="@+id/search_origin"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:hint="@string/origin_required"
+        android:imeOptions="actionNext"
+        android:inputType="textEmailAddress"
+        android:maxLines="1"
+        android:shadowColor="@color/textColorSecondary"
+        android:singleLine="true"
+        android:textColor="@color/textColorSecondary"
+        android:textColorHighlight="@color/textColorSecondary"
+        android:textColorHint="@color/textColorSecondary"
+        android:textColorLink="@color/textColorSecondary" />
+
+    <AutoCompleteTextView
+        android:id="@+id/search_dest"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:hint="@string/desination_required"
+        android:imeOptions="actionNext"
+        android:inputType="textEmailAddress"
+        android:maxLines="1"
+        android:shadowColor="@color/textColorSecondary"
+        android:singleLine="true"
+        android:textColor="@color/textColorSecondary"
+        android:textColorHighlight="@color/textColorSecondary"
+        android:textColorHint="@color/textColorSecondary"
+        android:textColorLink="@color/textColorSecondary" />
+
+</LinearLayout>

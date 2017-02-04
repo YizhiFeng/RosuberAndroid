@@ -38,6 +38,7 @@ public class LoginFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_login, container, false);
+//        getActivity().findViewById(R.id.action_search).setVisibility(View.GONE);
         mProgressSpinner = rootView.findViewById(R.id.login_progress);
         mRosefireLoginButton = rootView.findViewById(R.id.rosefire_sign_in_button);
         mRosefireLoginButton.setOnClickListener(new View.OnClickListener() {
@@ -84,7 +85,7 @@ public class LoginFragment extends Fragment {
             mOnLoginListener = (OnLoginListener) context;
         } else {
             throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
+                    + " must implement OnContactListener");
         }
     }
 
