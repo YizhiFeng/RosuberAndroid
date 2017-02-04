@@ -126,6 +126,9 @@ public class TripDetailFragment extends Fragment {
         //seats left
         TextView seatView = (TextView) view.findViewById(R.id.detail_capacity_input_text_view);
         long seats = mTrip.getCapacity() - mTrip.getPassengerKey().keySet().size();
+        if(seats<0){
+            seats = 0;
+        }
         seatView.setText(seats + "");
 
 

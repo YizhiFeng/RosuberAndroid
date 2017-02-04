@@ -3,6 +3,7 @@ package edu.rosehulman.wangf.fengy2.rosuber;
 import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -31,6 +32,7 @@ import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.Switch;
@@ -59,6 +61,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
 
 import edu.rosehulman.rosefire.Rosefire;
 import edu.rosehulman.rosefire.RosefireResult;
@@ -73,7 +77,7 @@ import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener,
+        implements NavigationView.OnNavigationItemSelectedListener, TripHistoryFragment.TripHistoryCallback,
         TripListFragment.TripListCallback, LoginFragment.OnLoginListener, TripDetailFragment.OnJoinListener, ProfileFragment.ProfileUpdateListener {
 
     private final static String PREFS = "PREFS";
@@ -90,10 +94,12 @@ public class MainActivity extends AppCompatActivity
     Toolbar mToolbar;
     User currentUser;
     TripListFragment mTripListFragment;
+    TripHistoryFragment mTripHistoryFragment;
     TextView navNameTextView;
     TextView navContactInfoTextView;
     StorageReference imageRef = FirebaseStorage.getInstance().getReferenceFromUrl("gs://rosuber-android.appspot.com").child("images");
     DatabaseReference userRef = FirebaseDatabase.getInstance().getReference().child("users");
+    DatabaseReference tripRef = FirebaseDatabase.getInstance().getReference().child("trips");
     ImageView navProfileImageView;
 
     @Override
@@ -176,22 +182,48 @@ public class MainActivity extends AppCompatActivity
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Join This Trip As The Following Role");
         long capacity = trip.getCapacity();
-
+        final int seatsLeft = (int)capacity-trip.getPassengerKey().size();
         if(trip.getDriverKey()==null){
+            if(seatsLeft<=0){
+                String[] sel = new String[]{"Driver"};
+                builder.setSingleChoiceItems(sel, -1, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        trip.setDriverKey(currentUser.getKey());
+
+                    }
+                });
+            }else{
             String[] selections = new String[]{"Passenger","Driver"};
-            builder.setSingleChoiceItems(selections, 0, new DialogInterface.OnClickListener() {
+            builder.setSingleChoiceItems(selections, -1, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {
+                    if(i==1){
+                        trip.setDriverKey(currentUser.getKey());
 
+                    }else{
+                        trip.addPassenger(currentUser.getKey());
+                    }
                 }
-            });
+            });}
+        }else{
+            if(seatsLeft<=0){
+                builder.setMessage("This trip is full! You can't join!");
+                builder.setTitle("Sorry!");
+            }else{
+            String[] selection = new String[]{"Passenger"};
+            builder.setSingleChoiceItems(selection, -1, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    trip.addPassenger(currentUser.getKey());
+                }
+            });}
         }
 
 
         builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                trip.addPassenger(mAuth.getCurrentUser().getUid());
                 mTripListFragment.getAdapter().editTrip(trip);
                 FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
                 ft.replace(R.id.fragment_container, mTripListFragment);
@@ -207,7 +239,10 @@ public class MainActivity extends AppCompatActivity
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         View view = getLayoutInflater().inflate(R.layout.dialog_add, null);
         builder.setView(view);
-        builder.setTitle(R.string.add_a_trip);
+        if(isEditing){
+            builder.setTitle("Update Trip");
+        }else{
+        builder.setTitle(R.string.add_a_trip);}
         final Switch isDriverSwitch = (Switch) view.findViewById(R.id.isDriverSwitch);
         final TextView isDriverTextView = (TextView) view.findViewById(R.id.isDriverTextView);
         final EditText originEditText = (EditText) view.findViewById(R.id.orginEditText);
@@ -219,6 +254,52 @@ public class MainActivity extends AppCompatActivity
         final SeekBar numPassengerSBar = (SeekBar) view.findViewById(R.id.seek_bar);
         final TextView capacityTextView = (TextView)view.findViewById(R.id.capacityTextView);
         final EditText priceEditText = (EditText) view.findViewById(R.id.priceEditText);
+
+        if(isEditing){
+            final boolean isDriver;
+            if(trip.getDriverKey()!=null){
+              isDriver = trip.getDriverKey().equals(currentUser.getKey())? true:false;}
+            else{
+                isDriver= false;
+            }
+
+            if(isDriver){
+                isDriverTextView.setText(R.string.i_am_a_driver);
+            }else{
+                isDriverTextView.setText(R.string.i_am_a_passenger);
+            }
+            String[] timeArray = trip.getTime().split(" ");
+            isDriverSwitch.setChecked(isDriver);
+            originEditText.setText(trip.getOrigin());
+            destEditText.setText(trip.getDestination());
+            dateTextView.setText(timeArray[0]);
+            timeTextView.setText(timeArray[1]);
+            numPassengerSBar.setProgress((int) trip.getCapacity());
+            capacityTextView.setText(trip.getCapacity()+"");
+            priceEditText.setText((int)trip.getPrice()+"");
+            builder.setNeutralButton(R.string.leave, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    if(isDriver){
+//                        tripRef.child(trip.getKey()+"/driverKey").removeValue();
+                        trip.setDriverKey(null);
+                        mTripHistoryFragment.getAdapter().editTrip(trip);
+                    }else{
+//                        tripRef.child(trip.getKey()+"/passengerKey").child(currentUser.getKey()).removeValue();
+                        Map<String, Boolean> newPass = new HashMap<>();
+                        for(String pass: trip.getPassengerKey().keySet()){
+                            if(!pass.equals(currentUser.getKey())){
+                                newPass.put(pass,true);
+                            }
+                        }
+                        trip.setPassengerKey(newPass);
+                        mTripHistoryFragment.getAdapter().editTrip(trip);
+                    }
+                    switchToHistoryFragment();
+                }
+            });
+        }
+
 
         isDriverSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -299,8 +380,8 @@ public class MainActivity extends AppCompatActivity
                     trip.setTime(dateTextView.getText().toString()+" "+timeTextView.getText().toString());
                     trip.setPrice(Long.parseLong(priceEditText.getText().toString()));
                     trip.setCapacity(numPassengerSBar.getProgress());
-                    mTripListFragment.getAdapter().editTrip(trip);
-
+                    mTripHistoryFragment.getAdapter().editTrip(trip);
+                    switchToHistoryFragment();
                 } else {
                     Trip newTrip = new Trip();
                     if(isDriverSwitch.isChecked()){
@@ -318,6 +399,18 @@ public class MainActivity extends AppCompatActivity
             }
         });
         builder.create().show();
+    }
+
+    private void switchToHistoryFragment() {
+        mFab.setVisibility(View.GONE);
+        mTripHistoryFragment = new TripHistoryFragment();
+        Bundle arg = new Bundle();
+        arg.putParcelable(Constants.USER,currentUser);
+        mTripHistoryFragment.setArguments(arg);
+
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        ft.replace(R.id.fragment_container, mTripHistoryFragment, "myTrips");
+        ft.commit();
     }
 
     @Override
@@ -384,7 +477,11 @@ public class MainActivity extends AppCompatActivity
                 switchTo = mTripListFragment;
                 break;
             case R.id.nav_trip_history:
-                switchTo = new TripHistoryFragment();
+                mTripHistoryFragment = new TripHistoryFragment();
+                Bundle arg = new Bundle();
+                arg.putParcelable(Constants.USER,currentUser);
+                mTripHistoryFragment.setArguments(arg);
+                switchTo = mTripHistoryFragment;
                 break;
             case R.id.nav_about:
                 switchTo = new AboutFragment();
@@ -425,10 +522,6 @@ public class MainActivity extends AppCompatActivity
             if (result.isSuccessful()) {
                 mAuth.signInWithCustomToken(result.getToken())
                         .addOnCompleteListener(this, mOnCompleteListener);
-//                Log.d(Constants.TAG, result.getEmail());
-//                Log.d(Constants.TAG, result.getGroup());
-//                Log.d(Constants.TAG, result.getName());
-//                Log.d(Constants.TAG, result.getUsername());
                 userRef.keepSynced(true);
                 currentUser = new User();
                 currentUser.setKey(result.getUsername());
@@ -653,6 +746,83 @@ public class MainActivity extends AppCompatActivity
             }
         });
         builder.setNegativeButton(android.R.string.cancel,null);
+        builder.create().show();
+    }
+
+    @Override
+    public void onEditTripClicked(Trip trip) {
+        addEditTripDialog(true,trip);
+    }
+
+    @Override
+    public void onContactInfoButtonClicked(String driverKey) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Contact Information");
+        View view = getLayoutInflater().inflate(R.layout.dialog_contact_info,null);
+        builder.setView(view);
+
+        //captures
+        final TextView driverPhoneTextView = (TextView) view.findViewById(R.id.driver_phone_input_text_view);
+        final TextView driverEmailTextView = (TextView) view.findViewById(R.id.driver_email_input_text_view);
+        final ImageButton driverPhoneImageButton = (ImageButton) view.findViewById(R.id.driver_phone_button);
+        ImageButton driverEmailImageButton = (ImageButton) view.findViewById(R.id.driver_email_button);
+
+
+        userRef.child(driverKey+"/phoneNumber").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Long phone = dataSnapshot.getValue(Long.class);
+                driverPhoneTextView.setText(phone+"");
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+        userRef.child(driverKey+"/email").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                String email = dataSnapshot.getValue(String.class);
+                driverEmailTextView.setText(email);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+        driverEmailImageButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //start email app
+                Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
+                emailIntent.setData(Uri.parse("mailto:")); // only email apps should handle this
+                emailIntent.putExtra(Intent.EXTRA_EMAIL, driverEmailTextView.getText().toString());
+                emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Rosuber Trip");
+
+                try {
+                    startActivity(emailIntent);
+                } catch (ActivityNotFoundException e) {
+                    //TODO: Handle case where no email app is available
+                }
+            }
+        });
+
+        driverPhoneImageButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //start message app
+                Intent smsIntent = new Intent(Intent.ACTION_VIEW);
+                smsIntent.setType("vnd.android-dir/mms-sms");
+                smsIntent.putExtra("address", driverPhoneTextView.getText().toString());
+                startActivity(smsIntent);
+            }
+        });
+
+        builder.setPositiveButton(android.R.string.ok,null);
         builder.create().show();
     }
 }

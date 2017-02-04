@@ -1,6 +1,7 @@
 package edu.rosehulman.wangf.fengy2.rosuber;
 
 import android.content.Context;
+import android.media.Image;
 import android.provider.ContactsContract;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -37,12 +38,17 @@ public class TripHistoryAdapter extends RecyclerView.Adapter<TripHistoryAdapter.
     private DatabaseReference mTripRef;
     private DatabaseReference mUserRef;
     private String passengers = "";
+    private User mUser;
 
-    public TripHistoryAdapter(Context context, TripHistoryFragment.TripHistoryCallback callback) {
+    public TripHistoryAdapter(Context context, TripHistoryFragment.TripHistoryCallback callback,User user) {
         mContext = context;
         mCallback = callback;
+        mUser = user;
         mTripRef = FirebaseDatabase.getInstance().getReference().child("trips");
-        mTripRef.addChildEventListener(new TripsHistoryChildEventListener());
+        Query driverQuery = mTripRef.orderByChild("driverKey").equalTo(mUser.getKey());
+        driverQuery.addChildEventListener(new TripsHistoryChildEventListener());
+        Query passengerQuery = mTripRef.orderByChild("passengerKey/"+mUser.getKey()).equalTo(true);
+        passengerQuery.addChildEventListener(new TripsHistoryChildEventListener());
         mUserRef = FirebaseDatabase.getInstance().getReference().child("users");
     }
 
@@ -54,7 +60,7 @@ public class TripHistoryAdapter extends RecyclerView.Adapter<TripHistoryAdapter.
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
-        Trip trip = mTrips.get(position);
+        final Trip trip = mTrips.get(position);
         holder.mDestinationTextView.setText(trip.getDestination());
         holder.mTimeTextView.setText(trip.getTime());
         holder.mOriginTextView.setText(trip.getOrigin());
@@ -100,9 +106,20 @@ public class TripHistoryAdapter extends RecyclerView.Adapter<TripHistoryAdapter.
         holder.mInfoButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                mCallback.onContactInfoButtonClicked(trip.getDriverKey());
             }
         });
+
+        holder.mEditButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mCallback.onEditTripClicked(trip);
+            }
+        });
+    }
+
+    public void editTrip(Trip trip){
+        mTripRef.child(trip.getKey()).setValue(trip);
     }
 
     @Override
@@ -118,6 +135,7 @@ public class TripHistoryAdapter extends RecyclerView.Adapter<TripHistoryAdapter.
         TextView mPassengersTextView;
         TextView mPriceTextView;
         ImageView mInfoButton;
+        ImageView mEditButton;
 
         public ViewHolder(View itemView) {
             super(itemView);
@@ -128,6 +146,7 @@ public class TripHistoryAdapter extends RecyclerView.Adapter<TripHistoryAdapter.
             mPassengersTextView = (TextView) itemView.findViewById(R.id.passenger_input_view);
             mPriceTextView = (TextView) itemView.findViewById(R.id.price_input_view);
             mInfoButton = (ImageView) itemView.findViewById(R.id.contact_info_image_view);
+            mEditButton = (ImageView) itemView.findViewById(R.id.edit_trip_image_view);
         }
     }
 

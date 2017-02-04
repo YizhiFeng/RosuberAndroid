@@ -19,7 +19,7 @@
         android:cropToPadding="false"
         android:layout_width="120dp"
         android:layout_height="120dp"
-        app:srcCompat="@drawable/ic_default_profile" />
+        app:srcCompat="@drawable/ic_person_black_48dp" />
 
     <TextView
 

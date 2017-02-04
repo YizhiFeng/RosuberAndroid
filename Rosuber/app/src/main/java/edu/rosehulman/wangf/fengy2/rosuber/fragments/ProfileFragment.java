@@ -48,15 +48,7 @@ public class ProfileFragment extends Fragment {
         super.onCreate(savedInstanceState);
         mUser = getArguments().getParcelable(Constants.USER);
 
-//        Log.d(Constants.TAG,roseFirePath);
-//        if (roseFirePath == null || roseFirePath.isEmpty()) {
-//            mRef = FirebaseDatabase.getInstance().getReference();
-//        } else {
-//            mRef = FirebaseDatabase.getInstance().getReference().child(roseFirePath);
-//        }
         mRef = FirebaseDatabase.getInstance().getReference().child("users");
-
-
     }
 
     @Override

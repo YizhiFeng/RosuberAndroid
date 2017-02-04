@@ -118,6 +118,7 @@ public class Trip implements Parcelable{
 
     }
 
+
     @Override
     public int describeContents() {
         return 0;

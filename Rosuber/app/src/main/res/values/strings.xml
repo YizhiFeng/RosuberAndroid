@@ -57,4 +57,6 @@
     <string name="price_detail">Price:</string>
     <string name="join_button">Join!</string>
     <string name="seats_left_detail">Seats Left:</string>
+
+    <string name="leave">Leave Trip</string>
 </resources>
