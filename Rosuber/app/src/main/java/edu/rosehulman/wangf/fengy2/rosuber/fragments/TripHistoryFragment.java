@@ -10,15 +10,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.google.firebase.database.FirebaseDatabase;
-
 import java.util.Map;
 
 import edu.rosehulman.wangf.fengy2.rosuber.Constants;
 import edu.rosehulman.wangf.fengy2.rosuber.R;
 import edu.rosehulman.wangf.fengy2.rosuber.Trip;
-import edu.rosehulman.wangf.fengy2.rosuber.TripHistoryAdapter;
-import edu.rosehulman.wangf.fengy2.rosuber.TripListAdapter;
+import edu.rosehulman.wangf.fengy2.rosuber.adapters.TripHistoryAdapter;
 import edu.rosehulman.wangf.fengy2.rosuber.User;
 
 /**

@@ -1,7 +1,6 @@
-package edu.rosehulman.wangf.fengy2.rosuber;
+package edu.rosehulman.wangf.fengy2.rosuber.adapters;
 
 import android.content.Context;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -19,6 +18,8 @@ import com.google.firebase.database.Query;
 
 import java.util.ArrayList;
 
+import edu.rosehulman.wangf.fengy2.rosuber.R;
+import edu.rosehulman.wangf.fengy2.rosuber.Trip;
 import edu.rosehulman.wangf.fengy2.rosuber.fragments.TripListFragment;
 
 /**

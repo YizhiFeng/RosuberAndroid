@@ -1,7 +1,6 @@
 package edu.rosehulman.wangf.fengy2.rosuber.fragments;
 
 import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
@@ -11,7 +10,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.google.firebase.database.DataSnapshot;
@@ -21,9 +19,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import edu.rosehulman.wangf.fengy2.rosuber.Constants;
-import edu.rosehulman.wangf.fengy2.rosuber.MyTripContactAdapter;
+import edu.rosehulman.wangf.fengy2.rosuber.adapters.MyTripContactAdapter;
 import edu.rosehulman.wangf.fengy2.rosuber.R;
-import edu.rosehulman.wangf.fengy2.rosuber.User;
 
 public class MyTripContactFragment extends Fragment {
 

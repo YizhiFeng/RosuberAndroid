@@ -7,7 +7,6 @@ import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
 
 import edu.rosehulman.wangf.fengy2.rosuber.R;
 

@@ -11,10 +11,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
-import edu.rosehulman.wangf.fengy2.rosuber.MainActivity;
 import edu.rosehulman.wangf.fengy2.rosuber.R;
 import edu.rosehulman.wangf.fengy2.rosuber.Trip;
-import edu.rosehulman.wangf.fengy2.rosuber.TripListAdapter;
+import edu.rosehulman.wangf.fengy2.rosuber.adapters.TripListAdapter;
 
 /**
  * Created by wangf on 1/16/2017.

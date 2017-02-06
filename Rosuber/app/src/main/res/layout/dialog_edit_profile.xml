@@ -31,7 +31,7 @@
         android:layout_alignParentEnd="true" />
 
     <TextView
-        android:text="If you want to upload new profile picture, click on the image"
+        android:text="@string/edit_profile_submsg"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/textView5"

@@ -67,4 +67,12 @@
     <string name="search_dialog_netural">SHOW ALL TRIPS</string>
     <string name="invalid_phone_number">Driver has not updated his/her phone number</string>
     <string name="invalid_email">Driver not found</string>
+    <string name="edit_profile_submsg">If you want to upload a new profile picture, click on the image</string>
+    <string name="edit_profile_dialog_title">Update Your Information</string>
+    <string name="join_trip_dialog_title">Join This Trip As The Following Role</string>
+    <string name="join_dialog_msg_full_trip">This trip is full! You can\'t join!</string>
+    <string name="join_dialog_msg_full_trip_title">Sorry!</string>
+    <string name="edit_a_trip">Update Trip</string>
+    <string name="add">ADD</string>
+    <string name="button_text_update">UPDATE</string>
 </resources>

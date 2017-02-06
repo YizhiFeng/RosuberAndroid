@@ -1,14 +1,11 @@
-package edu.rosehulman.wangf.fengy2.rosuber;
+package edu.rosehulman.wangf.fengy2.rosuber.adapters;
 
 import android.content.Context;
-import android.media.Image;
-import android.provider.ContactsContract;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -20,10 +17,11 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
-import org.w3c.dom.Text;
-
 import java.util.ArrayList;
 
+import edu.rosehulman.wangf.fengy2.rosuber.R;
+import edu.rosehulman.wangf.fengy2.rosuber.Trip;
+import edu.rosehulman.wangf.fengy2.rosuber.User;
 import edu.rosehulman.wangf.fengy2.rosuber.fragments.TripHistoryFragment;
 
 /**

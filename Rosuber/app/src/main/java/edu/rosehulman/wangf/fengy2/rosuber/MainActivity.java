@@ -184,7 +184,7 @@ public class MainActivity extends AppCompatActivity
 
     public void joinTripConfirmDialog(final Trip trip) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Join This Trip As The Following Role");
+        builder.setTitle(R.string.join_trip_dialog_title);
         long capacity = trip.getCapacity();
         final int seatsLeft = (int) capacity - trip.getPassengerKey().size();
         if (trip.getDriverKey() == null) {
@@ -213,8 +213,8 @@ public class MainActivity extends AppCompatActivity
             }
         } else {
             if (seatsLeft <= 0) {
-                builder.setMessage("This trip is full! You can't join!");
-                builder.setTitle("Sorry!");
+                builder.setMessage(R.string.join_dialog_msg_full_trip);
+                builder.setTitle(R.string.join_dialog_msg_full_trip_title);
             } else {
                 String[] selection = new String[]{"Passenger"};
                 builder.setSingleChoiceItems(selection, -1, new DialogInterface.OnClickListener() {
@@ -246,7 +246,7 @@ public class MainActivity extends AppCompatActivity
         View view = getLayoutInflater().inflate(R.layout.dialog_add, null);
         builder.setView(view);
         if (isEditing) {
-            builder.setTitle("Update Trip");
+            builder.setTitle(R.string.edit_a_trip);
         } else {
             builder.setTitle(R.string.add_a_trip);
         }
@@ -372,9 +372,9 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        String posButtonText = "ADD";
+        String posButtonText = getString(R.string.add);
         if (isEditing) {
-            posButtonText = "UPDATE";
+            posButtonText = getString(R.string.button_text_update);
         }
 
         builder.setNegativeButton(android.R.string.cancel, null);
@@ -465,6 +465,7 @@ public class MainActivity extends AppCompatActivity
     public boolean onNavigationItemSelected(MenuItem item) {
         mToolbar.setVisibility(View.VISIBLE);
         Fragment switchTo = null;
+        String backStack="";
         switch (item.getItemId()) {
             case R.id.nav_profile:
                 ProfileFragment profileFragment = new ProfileFragment();
@@ -472,6 +473,7 @@ public class MainActivity extends AppCompatActivity
                 args.putParcelable(Constants.USER, currentUser);
                 profileFragment.setArguments(args);
                 switchTo = profileFragment;
+                backStack = "profile";
                 break;
             case R.id.nav_home:
                 HomePageFragment homePageFragment = new HomePageFragment();
@@ -479,10 +481,12 @@ public class MainActivity extends AppCompatActivity
                 homeArgs.putString(Constants.ROSEFIRE_PATH, "users/" + mAuth.getCurrentUser().getUid());
                 homePageFragment.setArguments(homeArgs);
                 switchTo = homePageFragment;
+                backStack = "home";
                 break;
             case R.id.nav_find_trips:
                 mTripListFragment = new TripListFragment();
                 switchTo = mTripListFragment;
+                backStack = "trips";
                 break;
             case R.id.nav_trip_history:
                 mTripHistoryFragment = new TripHistoryFragment();
@@ -490,9 +494,11 @@ public class MainActivity extends AppCompatActivity
                 arg.putParcelable(Constants.USER, currentUser);
                 mTripHistoryFragment.setArguments(arg);
                 switchTo = mTripHistoryFragment;
+                backStack= "history";
                 break;
             case R.id.nav_about:
                 switchTo = new AboutFragment();
+                backStack = "about";
                 break;
         }
 
@@ -502,6 +508,7 @@ public class MainActivity extends AppCompatActivity
             for (int i = 0; i < getSupportFragmentManager().getBackStackEntryCount(); i++) {
                 getSupportFragmentManager().popBackStackImmediate();
             }
+            ft.addToBackStack(backStack);
             ft.commit();
         }
 
@@ -598,6 +605,8 @@ public class MainActivity extends AppCompatActivity
                         switchToProfileFragment();
                     }
                 });
+
+                loadProfileImage();
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
@@ -778,10 +787,11 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onEditButtonPressed() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Update Your Information");
+        builder.setTitle(R.string.edit_profile_dialog_title);
         View view = getLayoutInflater().inflate(R.layout.dialog_edit_profile, null);
         builder.setView(view);
         final EditText phoneEditText = (EditText) view.findViewById(R.id.edit_profile_phone_number);
+        phoneEditText.setText(currentUser.getPhoneNumber()+"");
         builder.setPositiveButton(R.string.update, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
