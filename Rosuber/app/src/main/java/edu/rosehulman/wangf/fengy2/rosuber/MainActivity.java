@@ -494,8 +494,6 @@ public class MainActivity extends AppCompatActivity
             case R.id.nav_about:
                 switchTo = new AboutFragment();
                 break;
-            case R.id.nav_settings:
-                break;
         }
 
         if (switchTo != null) {

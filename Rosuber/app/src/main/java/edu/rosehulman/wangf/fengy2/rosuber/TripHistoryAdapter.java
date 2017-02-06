@@ -37,7 +37,6 @@ public class TripHistoryAdapter extends RecyclerView.Adapter<TripHistoryAdapter.
     private ArrayList<Trip> mTrips = new ArrayList<>();
     private DatabaseReference mTripRef;
     private DatabaseReference mUserRef;
-    private String passengers = "";
     private User mUser;
 
     public TripHistoryAdapter(Context context, TripHistoryFragment.TripHistoryCallback callback,User user) {
@@ -81,7 +80,6 @@ public class TripHistoryAdapter extends RecyclerView.Adapter<TripHistoryAdapter.
             });
         }
 
-        passengers = "";
 
         if(trip.getPassengerKey().size()!=0) {
             for (String key : trip.getPassengerKey().keySet()) {
@@ -90,7 +88,6 @@ public class TripHistoryAdapter extends RecyclerView.Adapter<TripHistoryAdapter.
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         User user = dataSnapshot.getValue(User.class);
-                        passengers += user.getName() + "  ";
                         holder.mPassengersTextView.setText(holder.mPassengersTextView.getText().toString() + user.getName() + ", ");
                     }
 
@@ -101,6 +98,8 @@ public class TripHistoryAdapter extends RecyclerView.Adapter<TripHistoryAdapter.
                 });
             }
         }
+
+
 
         // to be filled
         holder.mInfoButton.setOnClickListener(new View.OnClickListener() {
