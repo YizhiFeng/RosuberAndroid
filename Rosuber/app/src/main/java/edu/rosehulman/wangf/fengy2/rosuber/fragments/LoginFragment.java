@@ -4,10 +4,16 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
+import com.google.firebase.iid.FirebaseInstanceId;
+
+import edu.rosehulman.wangf.fengy2.rosuber.Constants;
+import edu.rosehulman.wangf.fengy2.rosuber.MainActivity;
 import edu.rosehulman.wangf.fengy2.rosuber.R;
 
 /**

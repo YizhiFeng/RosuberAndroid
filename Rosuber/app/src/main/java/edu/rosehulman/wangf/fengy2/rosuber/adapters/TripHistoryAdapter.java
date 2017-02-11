@@ -1,6 +1,15 @@
 package edu.rosehulman.wangf.fengy2.rosuber.adapters;
 
+import android.app.Activity;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
+import android.media.RingtoneManager;
+import android.net.Uri;
+import android.os.Bundle;
+import android.support.v4.app.NotificationCompat;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -19,6 +28,8 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 
+import edu.rosehulman.wangf.fengy2.rosuber.Constants;
+import edu.rosehulman.wangf.fengy2.rosuber.MainActivity;
 import edu.rosehulman.wangf.fengy2.rosuber.R;
 import edu.rosehulman.wangf.fengy2.rosuber.Trip;
 import edu.rosehulman.wangf.fengy2.rosuber.User;
@@ -36,15 +47,18 @@ public class TripHistoryAdapter extends RecyclerView.Adapter<TripHistoryAdapter.
     private DatabaseReference mTripRef;
     private DatabaseReference mUserRef;
     private User mUser;
+    private Activity mActivity;
 
-    public TripHistoryAdapter(Context context, TripHistoryFragment.TripHistoryCallback callback,User user) {
+    public TripHistoryAdapter(Context context, TripHistoryFragment.TripHistoryCallback callback,
+                              User user, Activity activity) {
         mContext = context;
         mCallback = callback;
         mUser = user;
+        mActivity = activity;
         mTripRef = FirebaseDatabase.getInstance().getReference().child("trips");
         Query driverQuery = mTripRef.orderByChild("driverKey").equalTo(mUser.getKey());
         driverQuery.addChildEventListener(new TripsHistoryChildEventListener());
-        Query passengerQuery = mTripRef.orderByChild("passengerKey/"+mUser.getKey()).equalTo(true);
+        Query passengerQuery = mTripRef.orderByChild("passengerKey/" + mUser.getKey()).equalTo(true);
         passengerQuery.addChildEventListener(new TripsHistoryChildEventListener());
         mUserRef = FirebaseDatabase.getInstance().getReference().child("users");
     }
@@ -53,6 +67,10 @@ public class TripHistoryAdapter extends RecyclerView.Adapter<TripHistoryAdapter.
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.trip_history_list_view, parent, false);
         return new TripHistoryAdapter.ViewHolder(view);
+    }
+
+    public boolean hasMyTrip() {
+        return mTrips.isEmpty();
     }
 
     @Override
@@ -79,7 +97,7 @@ public class TripHistoryAdapter extends RecyclerView.Adapter<TripHistoryAdapter.
         }
 
 
-        if(trip.getPassengerKey().size()!=0) {
+        if (trip.getPassengerKey().size() != 0) {
             for (String key : trip.getPassengerKey().keySet()) {
 
                 mUserRef.child(key).addListenerForSingleValueEvent(new ValueEventListener() {
@@ -98,7 +116,6 @@ public class TripHistoryAdapter extends RecyclerView.Adapter<TripHistoryAdapter.
         }
 
 
-
         // to be filled
         holder.mInfoButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -115,7 +132,7 @@ public class TripHistoryAdapter extends RecyclerView.Adapter<TripHistoryAdapter.
         });
     }
 
-    public void editTrip(Trip trip){
+    public void editTrip(Trip trip) {
         mTripRef.child(trip.getKey()).setValue(trip);
     }
 
@@ -147,6 +164,35 @@ public class TripHistoryAdapter extends RecyclerView.Adapter<TripHistoryAdapter.
         }
     }
 
+    private void sendNotification(Trip trip) {
+        Intent intent = new Intent(mContext, mActivity.getClass());
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+//        Bundle args = new Bundle();
+//        args.putString(Constants.TAG, "hi");
+//        intent.putExtras(args);
+        PendingIntent pendingIntent = PendingIntent.getActivity(mActivity, 0 /* Request code */, intent,
+                PendingIntent.FLAG_ONE_SHOT);
+
+        String messageBody = "Your trip from " + trip.getOrigin() + " to " + trip.getDestination() + " has been updated";
+
+        Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(mContext)
+                .setSmallIcon(R.drawable.app_icon)
+                .setContentTitle("Trip Update")
+                .setPriority(Notification.PRIORITY_MAX)
+                .setContentText(messageBody)
+                .setAutoCancel(true)
+                .setSound(defaultSoundUri)
+                .setDefaults(Notification.DEFAULT_ALL)
+                .setContentIntent(pendingIntent);
+
+
+        NotificationManager notificationManager =
+                (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
+
+        notificationManager.notify(0 /* ID of notification */, notificationBuilder.build());
+    }
+
     class TripsHistoryChildEventListener implements ChildEventListener {
 
         @Override
@@ -165,8 +211,10 @@ public class TripHistoryAdapter extends RecyclerView.Adapter<TripHistoryAdapter.
                 if (key.equals(t.getKey())) {
                     t.setValues(trip);
                     notifyDataSetChanged();
+                    sendNotification(t);
                 }
             }
+
         }
 
         @Override

@@ -1,6 +1,11 @@
 package edu.rosehulman.wangf.fengy2.rosuber.adapters;
 
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.content.Context;
+import android.media.RingtoneManager;
+import android.net.Uri;
+import android.support.v4.app.NotificationCompat;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -18,6 +23,7 @@ import com.google.firebase.database.Query;
 
 import java.util.ArrayList;
 
+import edu.rosehulman.wangf.fengy2.rosuber.MyFirebaseMessagingService;
 import edu.rosehulman.wangf.fengy2.rosuber.R;
 import edu.rosehulman.wangf.fengy2.rosuber.Trip;
 import edu.rosehulman.wangf.fengy2.rosuber.fragments.TripListFragment;
@@ -110,6 +116,7 @@ public class TripListAdapter extends RecyclerView.Adapter<TripListAdapter.ViewHo
     public void editTrip(Trip trip) {
         mTripRef.child(trip.getKey()).setValue(trip);
     }
+
 
     class TripsChildEventListner implements ChildEventListener {
 

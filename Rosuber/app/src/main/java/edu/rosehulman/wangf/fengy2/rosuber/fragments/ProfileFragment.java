@@ -8,6 +8,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
@@ -49,6 +50,12 @@ public class ProfileFragment extends Fragment {
         mUser = getArguments().getParcelable(Constants.USER);
 
         mRef = FirebaseDatabase.getInstance().getReference().child("users");
+    }
+
+    @Override
+    public void onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        menu.findItem(R.id.action_search).setVisible(false);
     }
 
     @Override

@@ -2,6 +2,9 @@ package edu.rosehulman.wangf.fengy2.rosuber;
 
 import android.app.Activity;
 import android.app.DatePickerDialog;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
@@ -10,6 +13,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -17,6 +21,7 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.View;
@@ -46,6 +51,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -68,7 +74,6 @@ import java.util.Map;
 import edu.rosehulman.rosefire.Rosefire;
 import edu.rosehulman.rosefire.RosefireResult;
 import edu.rosehulman.wangf.fengy2.rosuber.fragments.AboutFragment;
-import edu.rosehulman.wangf.fengy2.rosuber.fragments.HomePageFragment;
 import edu.rosehulman.wangf.fengy2.rosuber.fragments.LoginFragment;
 import edu.rosehulman.wangf.fengy2.rosuber.fragments.MyTripContactFragment;
 import edu.rosehulman.wangf.fengy2.rosuber.fragments.ProfileFragment;
@@ -109,6 +114,7 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
         //custom font supports
@@ -157,6 +163,10 @@ public class MainActivity extends AppCompatActivity
         if (currentUser.getKey() != null) {
             loadProfileImage();
         }
+
+//        if(getIntent().getExtras()!=null){
+//            switchToHistoryFragment();
+//        }
     }
 
     private void initializeListeners() {
@@ -166,7 +176,7 @@ public class MainActivity extends AppCompatActivity
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 Log.d(Constants.TAG, "USER: " + user);
                 if (user != null) {
-                    switchToHomeFragment("users/" + user.getUid());
+                    switchToHistoryFragment(true);
                 } else {
                     switchToLoginFragment();
                 }
@@ -302,7 +312,7 @@ public class MainActivity extends AppCompatActivity
                         trip.setPassengerKey(newPass);
                         mTripHistoryFragment.getAdapter().editTrip(trip);
                     }
-                    switchToHistoryFragment();
+                    switchToHistoryFragment(false);
                 }
             });
         }
@@ -388,7 +398,7 @@ public class MainActivity extends AppCompatActivity
                     trip.setPrice(Long.parseLong(priceEditText.getText().toString()));
                     trip.setCapacity(numPassengerSBar.getProgress());
                     mTripHistoryFragment.getAdapter().editTrip(trip);
-                    switchToHistoryFragment();
+                    switchToHistoryFragment(false);
                 } else {
                     Trip newTrip = new Trip();
                     if (isDriverSwitch.isChecked()) {
@@ -408,12 +418,34 @@ public class MainActivity extends AppCompatActivity
         builder.create().show();
     }
 
-    private void switchToHistoryFragment() {
+    private void switchToHistoryFragment(boolean isInitializing) {
         mFab.setVisibility(View.GONE);
         mTripHistoryFragment = new TripHistoryFragment();
         Bundle arg = new Bundle();
         arg.putParcelable(Constants.USER, currentUser);
         mTripHistoryFragment.setArguments(arg);
+
+        if (isInitializing) {
+            userRef.child(currentUser.getKey()).child("phoneNumber").addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    Long phone = dataSnapshot.getValue(Long.class);
+                    if (phone == null || phone == 0) {
+                        showAddPhoneNumberDialog();
+                    }
+                    currentUser.setPhoneNumber(phone);
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+        }
+
+        setNavInfo();
+        loadProfileImage();
+        mToolbar.setVisibility(View.VISIBLE);
 
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         ft.replace(R.id.fragment_container, mTripHistoryFragment, "myTrips");
@@ -444,6 +476,13 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        menu.findItem(R.id.action_search).setVisible(false);
+        return true;
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
@@ -465,7 +504,7 @@ public class MainActivity extends AppCompatActivity
     public boolean onNavigationItemSelected(MenuItem item) {
         mToolbar.setVisibility(View.VISIBLE);
         Fragment switchTo = null;
-        String backStack="";
+        String backStack = "";
         switch (item.getItemId()) {
             case R.id.nav_profile:
                 ProfileFragment profileFragment = new ProfileFragment();
@@ -474,14 +513,6 @@ public class MainActivity extends AppCompatActivity
                 profileFragment.setArguments(args);
                 switchTo = profileFragment;
                 backStack = "profile";
-                break;
-            case R.id.nav_home:
-                HomePageFragment homePageFragment = new HomePageFragment();
-                Bundle homeArgs = new Bundle();
-                homeArgs.putString(Constants.ROSEFIRE_PATH, "users/" + mAuth.getCurrentUser().getUid());
-                homePageFragment.setArguments(homeArgs);
-                switchTo = homePageFragment;
-                backStack = "home";
                 break;
             case R.id.nav_find_trips:
                 mTripListFragment = new TripListFragment();
@@ -494,7 +525,7 @@ public class MainActivity extends AppCompatActivity
                 arg.putParcelable(Constants.USER, currentUser);
                 mTripHistoryFragment.setArguments(arg);
                 switchTo = mTripHistoryFragment;
-                backStack= "history";
+                backStack = "history";
                 break;
             case R.id.nav_about:
                 switchTo = new AboutFragment();
@@ -701,37 +732,6 @@ public class MainActivity extends AppCompatActivity
         ft.commit();
     }
 
-    private void switchToHomeFragment(String path) {
-
-        userRef.child(currentUser.getKey()).child("phoneNumber").addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                Long phone = dataSnapshot.getValue(Long.class);
-                if (phone == null || phone == 0) {
-                    showAddPhoneNumberDialog();
-                }
-                currentUser.setPhoneNumber(phone);
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-
-        setNavInfo();
-        loadProfileImage();
-        mToolbar.setVisibility(View.VISIBLE);
-        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        Fragment homeFragment = new HomePageFragment();
-        Bundle args = new Bundle();
-        args.putString(Constants.ROSEFIRE_PATH, path);
-        homeFragment.setArguments(args);
-        ft.replace(R.id.fragment_container, homeFragment);
-        ft.addToBackStack("home");
-        ft.commit();
-    }
-
     private void setNavInfo() {
         navContactInfoTextView.setText(currentUser.getEmail());
         navNameTextView.setText(currentUser.getName());
@@ -791,7 +791,7 @@ public class MainActivity extends AppCompatActivity
         View view = getLayoutInflater().inflate(R.layout.dialog_edit_profile, null);
         builder.setView(view);
         final EditText phoneEditText = (EditText) view.findViewById(R.id.edit_profile_phone_number);
-        phoneEditText.setText(currentUser.getPhoneNumber()+"");
+        phoneEditText.setText(currentUser.getPhoneNumber() + "");
         builder.setPositiveButton(R.string.update, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
@@ -855,4 +855,6 @@ public class MainActivity extends AppCompatActivity
             }
         }
     }
+
+
 }

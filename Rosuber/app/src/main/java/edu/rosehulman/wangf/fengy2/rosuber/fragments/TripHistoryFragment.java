@@ -7,8 +7,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
+
+import com.google.firebase.database.ChildEventListener;
 
 import java.util.Map;
 
@@ -27,9 +30,9 @@ public class TripHistoryFragment extends Fragment {
     private TripHistoryAdapter madapter;
     private TripHistoryCallback mCallback;
     private User mUser;
+    private ChildEventListener mListener;
 
     public TripHistoryFragment(){
-
     }
 
     @Override
@@ -39,13 +42,19 @@ public class TripHistoryFragment extends Fragment {
     }
 
     @Override
+    public void onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        menu.findItem(R.id.action_search).setVisible(false);
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle("My Trips");
         getActivity().findViewById(R.id.fab).setVisibility(View.GONE);
         RecyclerView view = (RecyclerView)inflater.inflate(R.layout.fragment_trip_list, container, false);
         view.setLayoutManager(new LinearLayoutManager(getContext()));
-        TripHistoryAdapter adapter = new TripHistoryAdapter(getContext(),mCallback, mUser);
+        TripHistoryAdapter adapter = new TripHistoryAdapter(getContext(),mCallback, mUser,getActivity());
         madapter = adapter;
         view.setAdapter(adapter);
         return view;
