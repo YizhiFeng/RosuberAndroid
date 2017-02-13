@@ -11,6 +11,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.RingtoneManager;
@@ -23,7 +24,9 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AlertDialog;
+import android.transition.Slide;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -61,6 +64,8 @@ import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.squareup.picasso.NetworkPolicy;
+import com.squareup.picasso.Picasso;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -74,7 +79,9 @@ import java.util.Map;
 import edu.rosehulman.rosefire.Rosefire;
 import edu.rosehulman.rosefire.RosefireResult;
 import edu.rosehulman.wangf.fengy2.rosuber.fragments.AboutFragment;
+import edu.rosehulman.wangf.fengy2.rosuber.fragments.InsertTripFragment;
 import edu.rosehulman.wangf.fengy2.rosuber.fragments.LoginFragment;
+import edu.rosehulman.wangf.fengy2.rosuber.fragments.MapFragment;
 import edu.rosehulman.wangf.fengy2.rosuber.fragments.MyTripContactFragment;
 import edu.rosehulman.wangf.fengy2.rosuber.fragments.ProfileFragment;
 import edu.rosehulman.wangf.fengy2.rosuber.fragments.TripDetailFragment;
@@ -86,7 +93,7 @@ import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, TripHistoryFragment.TripHistoryCallback,
         TripListFragment.TripListCallback, LoginFragment.OnLoginListener, TripDetailFragment.OnJoinListener,
-        ProfileFragment.ProfileUpdateListener, MyTripContactFragment.OnContactListener {
+        ProfileFragment.ProfileUpdateListener, MyTripContactFragment.OnContactListener, InsertTripFragment.InsertTripCallBack {
 
     private final static String PREFS = "PREFS";
     private static final int RC_ROSEFIRE_LOGIN = 1;
@@ -113,7 +120,9 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
+        this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
@@ -129,7 +138,7 @@ public class MainActivity extends AppCompatActivity
         mFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                addEditTripDialog(false, null);
+                switchToInsertTripFragment(false,null);
             }
         });
 
@@ -163,10 +172,24 @@ public class MainActivity extends AppCompatActivity
         if (currentUser.getKey() != null) {
             loadProfileImage();
         }
+    }
 
-//        if(getIntent().getExtras()!=null){
-//            switchToHistoryFragment();
-//        }
+    private void switchToInsertTripFragment(boolean isEdit,Trip trip) {
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        InsertTripFragment fragment = new InsertTripFragment();
+        Bundle args = new Bundle();
+        args.putString(Constants.USER,currentUser.getKey());
+        args.putBoolean(Constants.EDIT,isEdit);
+        args.putParcelable(Constants.TRIP,trip);
+        fragment.setArguments(args);
+
+        Slide slideTransition = new Slide(Gravity.RIGHT);
+        slideTransition.setDuration(200);
+        fragment.setEnterTransition(slideTransition);
+
+        ft.replace(R.id.fragment_container, fragment);
+        ft.addToBackStack("insert trip");
+        ft.commit();
     }
 
     private void initializeListeners() {
@@ -251,173 +274,6 @@ public class MainActivity extends AppCompatActivity
         builder.create().show();
     }
 
-    public void addEditTripDialog(final boolean isEditing, final Trip trip) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        View view = getLayoutInflater().inflate(R.layout.dialog_add, null);
-        builder.setView(view);
-        if (isEditing) {
-            builder.setTitle(R.string.edit_a_trip);
-        } else {
-            builder.setTitle(R.string.add_a_trip);
-        }
-        final Switch isDriverSwitch = (Switch) view.findViewById(R.id.isDriverSwitch);
-        final TextView isDriverTextView = (TextView) view.findViewById(R.id.isDriverTextView);
-        final EditText originEditText = (EditText) view.findViewById(R.id.orginEditText);
-        final EditText destEditText = (EditText) view.findViewById(R.id.destEditText);
-        Button dateButton = (Button) view.findViewById(R.id.dateButton);
-        final TextView dateTextView = (TextView) view.findViewById(R.id.dateTextView);
-        Button timeButton = (Button) view.findViewById(R.id.timeButton);
-        final TextView timeTextView = (TextView) view.findViewById(R.id.timeTextView);
-        final SeekBar numPassengerSBar = (SeekBar) view.findViewById(R.id.seek_bar);
-        final TextView capacityTextView = (TextView) view.findViewById(R.id.capacityTextView);
-        final EditText priceEditText = (EditText) view.findViewById(R.id.priceEditText);
-
-        if (isEditing) {
-            final boolean isDriver;
-            if (trip.getDriverKey() != null) {
-                isDriver = trip.getDriverKey().equals(currentUser.getKey()) ? true : false;
-            } else {
-                isDriver = false;
-            }
-
-            if (isDriver) {
-                isDriverTextView.setText(R.string.i_am_a_driver);
-            } else {
-                isDriverTextView.setText(R.string.i_am_a_passenger);
-            }
-            String[] timeArray = trip.getTime().split(" ");
-            isDriverSwitch.setChecked(isDriver);
-            originEditText.setText(trip.getOrigin());
-            destEditText.setText(trip.getDestination());
-            dateTextView.setText(timeArray[0]);
-            timeTextView.setText(timeArray[1]);
-            numPassengerSBar.setProgress((int) trip.getCapacity());
-            capacityTextView.setText(trip.getCapacity() + "");
-            priceEditText.setText((int) trip.getPrice() + "");
-            builder.setNeutralButton(R.string.leave, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    if (isDriver) {
-//                        tripRef.child(trip.getKey()+"/driverKey").removeValue();
-                        trip.setDriverKey(null);
-                        mTripHistoryFragment.getAdapter().editTrip(trip);
-                    } else {
-//                        tripRef.child(trip.getKey()+"/passengerKey").child(currentUser.getKey()).removeValue();
-                        Map<String, Boolean> newPass = new HashMap<>();
-                        for (String pass : trip.getPassengerKey().keySet()) {
-                            if (!pass.equals(currentUser.getKey())) {
-                                newPass.put(pass, true);
-                            }
-                        }
-                        trip.setPassengerKey(newPass);
-                        mTripHistoryFragment.getAdapter().editTrip(trip);
-                    }
-                    switchToHistoryFragment(false);
-                }
-            });
-        }
-
-
-        isDriverSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView,
-                                         boolean isChecked) {
-                if (isChecked) {
-                    isDriverTextView.setText(R.string.i_am_a_driver);
-                } else {
-                    isDriverTextView.setText(R.string.i_am_a_passenger);
-                }
-            }
-        });
-
-        dateButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Calendar mcurrentDate = Calendar.getInstance();
-                int mYear = mcurrentDate.get(Calendar.YEAR);
-                int mMonth = mcurrentDate.get(Calendar.MONTH);
-                int mDay = mcurrentDate.get(Calendar.DAY_OF_MONTH);
-                DatePickerDialog mDatePicker;
-                mDatePicker = new DatePickerDialog(view.getContext(), new DatePickerDialog.OnDateSetListener() {
-                    public void onDateSet(DatePicker datepicker, int selectedyear, int selectedmonth, int selectedday) {
-                        selectedmonth = selectedmonth + 1;
-                        dateTextView.setText(new DecimalFormat("00").format(selectedday) + "/" + new DecimalFormat("00").format(selectedmonth) + "/" + selectedyear);
-                    }
-                }, mYear, mMonth, mDay);
-                mDatePicker.setTitle("Select Date");
-                mDatePicker.show();
-            }
-        });
-
-        timeButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Calendar mcurrentTime = Calendar.getInstance();
-                int hour = mcurrentTime.get(Calendar.HOUR_OF_DAY);
-                int minute = mcurrentTime.get(Calendar.MINUTE);
-                TimePickerDialog mTimePicker;
-                mTimePicker = new TimePickerDialog(view.getContext(), new TimePickerDialog.OnTimeSetListener() {
-                    @Override
-                    public void onTimeSet(TimePicker timePicker, int selectedHour, int selectedMinute) {
-                        timeTextView.setText(new DecimalFormat("00").format(selectedHour) + ":" + new DecimalFormat("00").format(selectedMinute));
-                    }
-                }, hour, minute, true);
-                mTimePicker.setTitle("Select Time");
-                mTimePicker.show();
-            }
-        });
-
-        numPassengerSBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-                capacityTextView.setText("" + i);
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-            }
-        });
-
-        String posButtonText = getString(R.string.add);
-        if (isEditing) {
-            posButtonText = getString(R.string.button_text_update);
-        }
-
-        builder.setNegativeButton(android.R.string.cancel, null);
-        builder.setPositiveButton(posButtonText, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                if (isEditing) {
-                    trip.setOrigin(originEditText.getText().toString());
-                    trip.setDestination(destEditText.getText().toString());
-                    trip.setTime(dateTextView.getText().toString() + " " + timeTextView.getText().toString());
-                    trip.setPrice(Long.parseLong(priceEditText.getText().toString()));
-                    trip.setCapacity(numPassengerSBar.getProgress());
-                    mTripHistoryFragment.getAdapter().editTrip(trip);
-                    switchToHistoryFragment(false);
-                } else {
-                    Trip newTrip = new Trip();
-                    if (isDriverSwitch.isChecked()) {
-                        newTrip.setDriverKey(currentUser.getKey());
-                    } else {
-                        newTrip.addPassenger(currentUser.getKey());
-                    }
-                    newTrip.setOrigin(originEditText.getText().toString());
-                    newTrip.setDestination(destEditText.getText().toString());
-                    newTrip.setTime(dateTextView.getText().toString() + " " + timeTextView.getText().toString());
-                    newTrip.setPrice(Long.parseLong(priceEditText.getText().toString()));
-                    newTrip.setCapacity(numPassengerSBar.getProgress());
-                    mTripListFragment.getAdapter().addTrip(newTrip);
-                }
-            }
-        });
-        builder.create().show();
-    }
-
     private void switchToHistoryFragment(boolean isInitializing) {
         mFab.setVisibility(View.GONE);
         mTripHistoryFragment = new TripHistoryFragment();
@@ -479,6 +335,7 @@ public class MainActivity extends AppCompatActivity
     public boolean onPrepareOptionsMenu(Menu menu) {
         super.onPrepareOptionsMenu(menu);
         menu.findItem(R.id.action_search).setVisible(false);
+        menu.findItem(R.id.action_map_search).setVisible(false);
         return true;
     }
 
@@ -552,7 +409,14 @@ public class MainActivity extends AppCompatActivity
     public void onTripSelected(Trip trip) {
         mToolbar.setVisibility(View.VISIBLE);
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        ft.replace(R.id.fragment_container, TripDetailFragment.newInstance(trip));
+
+        TripDetailFragment fragment = TripDetailFragment.newInstance(trip);
+
+        Slide slideTransition = new Slide(Gravity.RIGHT);
+        slideTransition.setDuration(100);
+        fragment.setEnterTransition(slideTransition);
+
+        ft.replace(R.id.fragment_container, fragment);
         ft.addToBackStack("detail");
         ft.commit();
     }
@@ -647,27 +511,18 @@ public class MainActivity extends AppCompatActivity
     private void loadProfileImage() {
         StorageReference profileImageRef = imageRef.child(currentUser.getKey());
 
-        File localFile = null;
-        try {
-            localFile = File.createTempFile("images", "jpg");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        final File finalLocalFile = localFile;
-        profileImageRef.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+        profileImageRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
             @Override
-            public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
-                // Local temp file has been created
-                Bitmap bmp = BitmapFactory.decodeFile(finalLocalFile.getPath());
-                navProfileImageView.setImageBitmap(bmp);
+            public void onSuccess(Uri uri) {
+                Picasso.with(MainActivity.this).load(uri.toString()).into(navProfileImageView);
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
-            public void onFailure(@NonNull Exception exception) {
-                // Handle any errors
+            public void onFailure(@NonNull Exception e) {
+                Log.d("image load", "onFailure: ");
             }
         });
+
     }
 
     private void showAddPhoneNumberDialog() {
@@ -807,7 +662,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onEditTripClicked(Trip trip) {
-        addEditTripDialog(true, trip);
+        switchToInsertTripFragment(true,trip);
     }
 
     @Override
@@ -818,6 +673,11 @@ public class MainActivity extends AppCompatActivity
         args.putStringArray(Constants.PASSENGER_KEYS, (passengerKeys.keySet()).toArray(new String[passengerKeys.size()]));
         myTripContactFragment.setArguments(args);
         mFab.setVisibility(View.GONE);
+
+        Slide slideTransition = new Slide(Gravity.RIGHT);
+        slideTransition.setDuration(200);
+        myTripContactFragment.setEnterTransition(slideTransition);
+
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         ft.replace(R.id.fragment_container, myTripContactFragment);
         ft.addToBackStack("contactInfo");
@@ -854,6 +714,61 @@ public class MainActivity extends AppCompatActivity
             } catch (ActivityNotFoundException e) {
             }
         }
+    }
+
+
+    @Override
+    public void insertTripPressed(Trip trip,boolean isEdit,String origin, String destination, String time, Long price, long capacity, boolean isDriverChecked) {
+        if(isEdit) {
+            trip.setOrigin(origin);
+            trip.setDestination(destination);
+            trip.setTime(time);
+            trip.setPrice(price);
+            trip.setCapacity(capacity);
+            mTripHistoryFragment.getAdapter().editTrip(trip);
+            switchToHistoryFragment(false);
+        }else {
+            Trip newTrip = new Trip();
+            if (isDriverChecked) {
+                newTrip.setDriverKey(currentUser.getKey());
+            } else {
+                newTrip.addPassenger(currentUser.getKey());
+            }
+            newTrip.setOrigin(origin);
+            newTrip.setDestination(destination);
+            newTrip.setTime(time);
+            newTrip.setPrice(price);
+            newTrip.setCapacity(capacity);
+            mTripListFragment.getAdapter().addTrip(newTrip);
+            switchToHistoryFragment(false);
+        }
+    }
+
+    @Override
+    public void leaveTripPressed(Trip trip) {
+        mTripHistoryFragment.getAdapter().editTrip(trip);
+        switchToHistoryFragment(false);
+    }
+
+    @Override
+    public void cancelInsertTripButtonPressed(boolean idEdit) {
+        if(idEdit){
+            switchToHistoryFragment(false);
+        }else{
+        switchToTripListFragment();}
+    }
+
+    private void switchToTripListFragment() {
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+//        Slide slideTransition = new Slide(Gravity.RIGHT);
+//        slideTransition.setDuration(200);
+//        mTripHistoryFragment.setEnterTransition(slideTransition);
+        ft.replace(R.id.fragment_container, mTripListFragment);
+        for (int i = 0; i < getSupportFragmentManager().getBackStackEntryCount(); i++) {
+            getSupportFragmentManager().popBackStackImmediate();
+        }
+        ft.addToBackStack("trips");
+        ft.commit();
     }
 
 

@@ -55,12 +55,14 @@ public class TripHistoryAdapter extends RecyclerView.Adapter<TripHistoryAdapter.
         mCallback = callback;
         mUser = user;
         mActivity = activity;
+
         mTripRef = FirebaseDatabase.getInstance().getReference().child("trips");
         Query driverQuery = mTripRef.orderByChild("driverKey").equalTo(mUser.getKey());
         driverQuery.addChildEventListener(new TripsHistoryChildEventListener());
         Query passengerQuery = mTripRef.orderByChild("passengerKey/" + mUser.getKey()).equalTo(true);
         passengerQuery.addChildEventListener(new TripsHistoryChildEventListener());
         mUserRef = FirebaseDatabase.getInstance().getReference().child("users");
+
     }
 
     @Override

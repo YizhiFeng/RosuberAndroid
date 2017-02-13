@@ -1,21 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="12dp">
+    tools:ignore="MissingPrefix"
+    android:padding="15dp">
 
-    <View
-        android:id="@+id/divider_view1"
-        android:background="@color/colorPrimaryDark"
-        android:layout_width = "match_parent"
-        android:layout_height="1dp"
-        android:layout_marginTop="4dp" />
 
     <RelativeLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="15dp"
         android:orientation="horizontal">
 
         <TextView
@@ -23,10 +20,12 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/i_am_a_driver"
+            fontPath="fonts/Philosopher-Bold.ttf"
             android:layout_centerVertical="true"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
-            android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
+            android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+            android:textSize="16sp" />
 
         <Switch
             android:id="@+id/isDriverSwitch"
@@ -40,65 +39,102 @@
             android:layout_marginStart="26dp" />
     </RelativeLayout>
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <TextView
-            android:id="@+id/originTextView"
-            android:layout_width="35dp"
-            android:layout_height="wrap_content"
-            android:text="@string/from"
-            android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
-
-        <EditText
-            android:id="@+id/orginEditText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:ems="10"
-            android:hint="@string/from_hint"
-            android:inputType="textCapWords" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <TextView
-            android:id="@+id/destTextView"
-            android:layout_width="35dp"
-            android:layout_height="wrap_content"
-            android:text="@string/to"
-            android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
-
-        <EditText
-            android:id="@+id/destEditText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:ems="10"
-            android:hint="@string/to_hint"
-            android:inputType="textCapWords" />
-    </LinearLayout>
-
-    <!--<DatePicker-->
-    <!--android:id="@+id/datePicker"-->
-    <!--android:layout_width="match_parent"-->
-    <!--android:layout_height="98dp"-->
-    <!--android:datePickerMode="calendar"-->
-    <!--android:calendarViewShown="true"/>-->
-
-    <!--<TimePicker-->
-    <!--android:id="@+id/timePicker"-->
-    <!--android:layout_width="match_parent"-->
-    <!--android:layout_height="96dp"-->
-    <!--android:textAlignment="center"-->
-    <!--android:clickable="true"/>-->
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="15dp">
+
+        <TextView
+            android:id="@+id/originTextView"
+            android:layout_height="wrap_content"
+            android:text="@string/from"
+            fontPath="fonts/Philosopher-Bold.ttf"
+            android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+            android:layout_width="wrap_content"
+            android:layout_marginRight="15dp"
+            android:textSize="18sp"
+            android:layout_centerVertical="true"
+            android:layout_alignParentTop="true" />
+
+        <EditText
+            android:id="@+id/orginEditText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:hint="@string/from_hint"
+            android:inputType="textCapWords"
+            android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+            android:textSize="18sp"
+            android:textColor="@android:color/black"
+            android:minLines="1"
+            android:maxLines="3"
+            android:layout_alignParentTop="true"
+            android:layout_toEndOf="@+id/originTextView" />
+
+        <ImageButton
+            style="@android:style/Widget.DeviceDefault.Light.ImageButton"
+            app:srcCompat="@drawable/ic_add_location_black_24dp"
+            android:background="@android:color/transparent"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:id="@+id/origin_image_button"
+            android:scaleType="centerCrop"
+            android:layout_centerVertical="true"
+            android:layout_alignParentEnd="true" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
         android:layout_marginTop="5dp"
+        android:weightSum="1">
+
+        <ImageButton
+            style="@android:style/Widget.DeviceDefault.Light.ImageButton"
+            app:srcCompat="@drawable/ic_add_location_black_24dp"
+            android:background="@android:color/transparent"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:id="@+id/destination_image_button"
+            android:scaleType="centerCrop"
+            android:layout_centerVertical="true"
+            android:layout_alignParentEnd="true" />
+
+        <EditText
+            android:id="@+id/destEditText"
+            android:layout_width="wrap_content"
+            android:ems="10"
+            android:hint="@string/to_hint"
+            android:inputType="textCapWords"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+            android:textSize="18sp"
+            android:textColor="@android:color/black"
+            android:maxLines="3"
+            android:minLines="1"
+            android:layout_weight="0.96"
+            android:layout_alignParentTop="true"
+            android:layout_toEndOf="@+id/destTextView" />
+
+        <TextView
+            android:id="@+id/destTextView"
+            android:layout_height="wrap_content"
+            android:text="@string/to"
+            fontPath="fonts/Philosopher-Bold.ttf"
+            android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+            android:textSize="18sp"
+            android:layout_marginRight="15dp"
+            android:layout_width="47dp"
+            android:layout_centerVertical="true"
+            android:layout_alignParentStart="true" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
         android:orientation="horizontal">
 
         <Button
@@ -137,12 +173,13 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp">
+        android:layout_marginTop="10dp">
 
         <TextView
             android:id="@+id/dateTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            fontPath="fonts/Philosopher-Bold.ttf"
             android:textAppearance="@style/TextAppearance.AppCompat.Body1"
             android:layout_alignParentTop="true"
             android:layout_alignParentLeft="true"
@@ -152,6 +189,7 @@
             android:id="@+id/timeTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            fontPath="fonts/Philosopher-Bold.ttf"
             android:textAppearance="@style/TextAppearance.AppCompat.Body1"
             android:layout_marginLeft="14dp"
             android:layout_marginStart="14dp"
@@ -163,13 +201,14 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp">
+        android:layout_marginTop="15dp">
 
         <TextView
             android:id="@+id/numTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/capacity"
+            fontPath="fonts/Philosopher-Bold.ttf"
             android:textAppearance="@style/TextAppearance.AppCompat.Body1"
             android:textSize="16sp" />
 
@@ -202,14 +241,16 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_marginTop="8dp">
+        android:layout_marginTop="15dp">
 
         <TextView
             android:id="@+id/priceTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/suggested_price"
-            android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
+            fontPath="fonts/Philosopher-Bold.ttf"
+            android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+            android:textSize="16sp" />
 
         <EditText
             android:id="@+id/priceEditText"
@@ -219,6 +260,58 @@
             android:hint="@string/price_hint"
             android:inputType="number" />
     </LinearLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="15dp">
+
+
+        <Button
+            android:text="CANCEL"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/insert_trip_button"
+            android:layout_toLeftOf="@+id/insert_trip_button"
+            android:layout_toStartOf="@+id/insert_trip_button"
+            android:layout_marginRight="10dp"
+            android:layout_marginEnd="10dp"
+            android:id="@+id/cancel_insert_trip_button"
+            fontPath="fonts/Philosopher-Bold.ttf"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:textSize="16sp" />
+
+        <Button
+            android:text="LEAVE TRIP"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/cancel_insert_trip_button"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:id="@+id/leave_trip_button"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:textColor="@color/colorPrimary"
+            android:textSize="16sp"
+            fontPath="fonts/Philosopher-Bold.ttf"
+            android:visibility="visible"
+            android:background="@android:color/transparent"
+            android:elevation="2dp" />
+
+        <Button
+            android:text="ADD"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/insert_trip_button"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:textColor="@color/colorPrimary"
+            fontPath="fonts/Philosopher-Bold.ttf"
+            android:textSize="16sp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:background="@android:color/transparent"
+            android:elevation="5dp" />
+    </RelativeLayout>
 
 
 </LinearLayout>

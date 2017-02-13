@@ -3,10 +3,12 @@ package edu.rosehulman.wangf.fengy2.rosuber.fragments;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
@@ -21,11 +23,14 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.squareup.picasso.NetworkPolicy;
+import com.squareup.picasso.Picasso;
 
 import java.io.File;
 import java.io.IOException;
 
 import edu.rosehulman.wangf.fengy2.rosuber.Constants;
+import edu.rosehulman.wangf.fengy2.rosuber.MainActivity;
 import edu.rosehulman.wangf.fengy2.rosuber.R;
 import edu.rosehulman.wangf.fengy2.rosuber.User;
 
@@ -39,7 +44,6 @@ public class ProfileFragment extends Fragment {
     private User mUser;
     private ProfileUpdateListener mListner;
     StorageReference imageRef = FirebaseStorage.getInstance().getReferenceFromUrl("gs://rosuber-android.appspot.com").child("images");
-    private String imgaeFilePath = null;
 
     public ProfileFragment() {
     }
@@ -67,7 +71,7 @@ public class ProfileFragment extends Fragment {
         TextView nameTextView = (TextView) rootView.findViewById(R.id.name_input_text_view);
         TextView emailTextView = (TextView) rootView.findViewById(R.id.email_input_text_view);
         TextView phoneTextView = (TextView) rootView.findViewById(R.id.phone_input_text_view);
-        ImageButton editImageButton = (ImageButton) rootView.findViewById(R.id.editImageButton);
+        final ImageButton editImageButton = (ImageButton) rootView.findViewById(R.id.editImageButton);
         editImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -77,7 +81,6 @@ public class ProfileFragment extends Fragment {
         nameTextView.setText(mUser.getName());
         emailTextView.setText(mUser.getEmail());
         phoneTextView.setText(mUser.getPhoneNumber() + "");
-//        mRef.child(mUser.getKey()).setValue(mUser);
 
         final ImageButton imageButton = (ImageButton) rootView.findViewById(R.id.profileImageButton);
         imageButton.setOnClickListener(new View.OnClickListener() {
@@ -88,26 +91,16 @@ public class ProfileFragment extends Fragment {
         });
         StorageReference profileImageRef = imageRef.child(mUser.getKey());
 
-        File localFile = null;
-        try {
-            localFile = File.createTempFile("images", "jpg");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        final File finalLocalFile = localFile;
-        profileImageRef.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+        profileImageRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
             @Override
-            public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
-                // Local temp file has been created
-                imgaeFilePath = finalLocalFile.getPath();
-                Bitmap bmp = BitmapFactory.decodeFile(imgaeFilePath);
-                imageButton.setImageBitmap(bmp);
+            public void onSuccess(Uri uri) {
+                Log.d("profile image", "onSuccess: "+uri.toString());
+                Picasso.with(getContext()).load(uri.toString()).into(imageButton);
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
-            public void onFailure(@NonNull Exception exception) {
-                // Handle any errors
+            public void onFailure(@NonNull Exception e) {
+                Log.d("image load", "onFailure: ");
             }
         });
 
