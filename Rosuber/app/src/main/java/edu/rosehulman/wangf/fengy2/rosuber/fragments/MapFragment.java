@@ -69,12 +69,16 @@ public class MapFragment extends Fragment {
         super.onPrepareOptionsMenu(menu);
         menu.findItem(R.id.action_map_search).setVisible(true);
         menu.findItem(R.id.action_search).setVisible(false);
+        menu.findItem(R.id.action_map_ok).setVisible(true);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if(item.getItemId()==R.id.action_map_search){
             searchAddress();
+            return true;
+        }else if(item.getItemId() ==R.id.action_map_ok){
+            switchToInsertTripFragment();
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -120,14 +124,14 @@ public class MapFragment extends Fragment {
                 googleMap = mMap;
 
                 // For showing a move to my location button
-
-                if (ActivityCompat.checkSelfPermission(getContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-                        || ActivityCompat.checkSelfPermission(getContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                    googleMap.setMyLocationEnabled(true);
-                } else {
-                    Toast.makeText(getActivity(), "No location permission", Toast.LENGTH_SHORT).show();
-                    ActivityCompat.requestPermissions(getActivity(), new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, RC_PERMISSIONS);
-                }
+//
+//                if (ActivityCompat.checkSelfPermission(getContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+//                        || ActivityCompat.checkSelfPermission(getContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+//                    googleMap.setMyLocationEnabled(true);
+//                } else {
+//                    Toast.makeText(getActivity(), "No location permission", Toast.LENGTH_SHORT).show();
+//                    ActivityCompat.requestPermissions(getActivity(), new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, RC_PERMISSIONS);
+//                }
 
 
                 // For dropping a marker at a point on the Map
@@ -163,7 +167,6 @@ public class MapFragment extends Fragment {
                     i++;
                 }
 
-
                 AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
                 builder.setTitle("Select One");
                 builder.setSingleChoiceItems(adds, -1, new DialogInterface.OnClickListener() {
@@ -181,18 +184,9 @@ public class MapFragment extends Fragment {
                     }
                 });
 
-                builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        switchToInsertTripFragment();
-                    }
-                });
-
+                builder.setPositiveButton(android.R.string.ok, null);
                 builder.create().show();
-//
-//                Address address = addresses.get(0);
-//                LatLng location = new LatLng(address.getLatitude(),address.getLongitude());
-//                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, zoomLevel));
+
             } catch (IOException e) {
                 Toast.makeText(getContext(), "Network connection to geocoder failed",Toast.LENGTH_LONG).show();
                 e.printStackTrace();

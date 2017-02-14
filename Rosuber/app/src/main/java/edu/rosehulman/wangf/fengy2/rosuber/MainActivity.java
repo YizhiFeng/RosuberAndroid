@@ -172,6 +172,7 @@ public class MainActivity extends AppCompatActivity
         if (currentUser.getKey() != null) {
             loadProfileImage();
         }
+
     }
 
     private void switchToInsertTripFragment(boolean isEdit,Trip trip) {
@@ -218,6 +219,13 @@ public class MainActivity extends AppCompatActivity
     public void joinTripConfirmDialog(final Trip trip) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(R.string.join_trip_dialog_title);
+        if((trip.getDriverKey()!=null &&trip.getDriverKey().equals(currentUser.getKey())) || (trip.getPassengerKey()!=null && trip.getPassengerKey().containsKey(currentUser.getKey()))){
+            builder.setTitle("You are already in this trip!");
+            builder.setPositiveButton(android.R.string.ok,null);
+            builder.create().show();
+            return;
+        }
+
         long capacity = trip.getCapacity();
         final int seatsLeft = (int) capacity - trip.getPassengerKey().size();
         if (trip.getDriverKey() == null) {
@@ -237,8 +245,9 @@ public class MainActivity extends AppCompatActivity
                     public void onClick(DialogInterface dialogInterface, int i) {
                         if (i == 1) {
                             trip.setDriverKey(currentUser.getKey());
-
+                            trip.getPassengerKey().remove(currentUser.getKey());
                         } else {
+                            trip.setDriverKey(null);
                             trip.addPassenger(currentUser.getKey());
                         }
                     }
@@ -746,9 +755,24 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void leaveTripPressed(Trip trip) {
-        mTripHistoryFragment.getAdapter().editTrip(trip);
-        switchToHistoryFragment(false);
+        leaveTripConfirmDialog(trip);
     }
+
+    private void leaveTripConfirmDialog(final Trip trip){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.leave_trip_dialog_title);
+        builder.setMessage(R.string.leave_trip_dialog_msg);
+        builder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                mTripHistoryFragment.getAdapter().editTrip(trip);
+                switchToHistoryFragment(false);
+            }
+        });
+        builder.setNegativeButton(android.R.string.cancel,null);
+        builder.create().show();
+    }
+
 
     @Override
     public void cancelInsertTripButtonPressed(boolean idEdit) {

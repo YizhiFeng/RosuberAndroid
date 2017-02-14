@@ -71,10 +71,6 @@ public class TripHistoryAdapter extends RecyclerView.Adapter<TripHistoryAdapter.
         return new TripHistoryAdapter.ViewHolder(view);
     }
 
-    public boolean hasMyTrip() {
-        return mTrips.isEmpty();
-    }
-
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
         final Trip trip = mTrips.get(position);
@@ -100,13 +96,20 @@ public class TripHistoryAdapter extends RecyclerView.Adapter<TripHistoryAdapter.
 
 
         if (trip.getPassengerKey().size() != 0) {
+            int count = 0;
+            final int size = trip.getPassengerKey().size();
             for (String key : trip.getPassengerKey().keySet()) {
 
+                final int finalCount = count;
                 mUserRef.child(key).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         User user = dataSnapshot.getValue(User.class);
-                        holder.mPassengersTextView.setText(holder.mPassengersTextView.getText().toString() + user.getName() + ", ");
+                        if(finalCount == (size-1)){
+                            holder.mPassengersTextView.setText(holder.mPassengersTextView.getText().toString() + user.getName());
+                        }else{
+                            holder.mPassengersTextView.setText(holder.mPassengersTextView.getText().toString() + user.getName() + ", ");
+                        }
                     }
 
                     @Override
@@ -114,6 +117,7 @@ public class TripHistoryAdapter extends RecyclerView.Adapter<TripHistoryAdapter.
 
                     }
                 });
+                count++;
             }
         }
 

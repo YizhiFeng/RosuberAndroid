@@ -46,6 +46,8 @@ public class MyTripContactFragment extends Fragment {
     public void onPrepareOptionsMenu(Menu menu) {
         super.onPrepareOptionsMenu(menu);
         menu.findItem(R.id.action_search).setVisible(false);
+        menu.findItem(R.id.action_map_ok).setVisible(false);
+        menu.findItem(R.id.action_map_search).setVisible(false);
     }
 
     @Override

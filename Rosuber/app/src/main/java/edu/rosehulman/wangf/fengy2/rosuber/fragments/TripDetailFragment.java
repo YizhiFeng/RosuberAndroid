@@ -35,7 +35,6 @@ public class TripDetailFragment extends Fragment {
     private Trip mTrip;
     private OnJoinListener mListener;
     private DatabaseReference mUserRef = FirebaseDatabase.getInstance().getReference().child("users");
-    private String passengers = "";
 
     public TripDetailFragment() {
 
@@ -61,6 +60,8 @@ public class TripDetailFragment extends Fragment {
     public void onPrepareOptionsMenu(Menu menu) {
         super.onPrepareOptionsMenu(menu);
         menu.findItem(R.id.action_search).setVisible(false);
+        menu.findItem(R.id.action_map_ok).setVisible(false);
+        menu.findItem(R.id.action_map_ok).setVisible(false);
     }
 
     @Override
@@ -99,16 +100,20 @@ public class TripDetailFragment extends Fragment {
         //passenger
         final TextView passengerView = (TextView) view.findViewById(R.id.detail_passenger_input_text_view);
         if (mTrip.getPassengerKey().size() != 0) {
+            int count = 0;
+            final int size = mTrip.getPassengerKey().size();
             for (String key : mTrip.getPassengerKey().keySet()) {
+                final int finalCount = count;
                 mUserRef.child(key).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
-
                         User user = dataSnapshot.getValue(User.class);
 
-                        passengers += user.getName() + ",  ";
-                        passengers = passengers.substring(0, passengers.length() - 1);
-                        passengerView.setText(passengers);
+                        if(finalCount == (size-1)){
+                            passengerView.setText(passengerView.getText().toString() + user.getName());
+                        }else{
+                            passengerView.setText(passengerView.getText().toString() + user.getName() + ", ");
+                        }
                     }
 
                     @Override
@@ -116,6 +121,7 @@ public class TripDetailFragment extends Fragment {
 
                     }
                 });
+                count++;
             }
         }
 

@@ -22,6 +22,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 
 import edu.rosehulman.wangf.fengy2.rosuber.MyFirebaseMessagingService;
 import edu.rosehulman.wangf.fengy2.rosuber.R;
@@ -40,7 +41,6 @@ public class TripListAdapter extends RecyclerView.Adapter<TripListAdapter.ViewHo
     private DatabaseReference mTripRef;
     private TripsChildEventListner mListener;
     private SearchTripsChildEventListner mSearchListener;
-    private Query mQuery;
 
     public TripListAdapter(Context context, TripListFragment.TripListCallback callback) {
         mContext = context;
@@ -52,17 +52,18 @@ public class TripListAdapter extends RecyclerView.Adapter<TripListAdapter.ViewHo
     }
 
     public void toggle(String from, String to) {
-        mSearchListener = new SearchTripsChildEventListner(to);
-        mQuery = mTripRef.orderByChild("origin").equalTo(from);
+        if (from != null) {
+            mSearchListener = new SearchTripsChildEventListner(from, to);
+        }
         if (from == null) {
-            mQuery.removeEventListener(mSearchListener);
+            mTripRef.removeEventListener(mSearchListener);
             mTrips.clear();
             mTripRef.addChildEventListener(mListener);
             return;
         }
         mTripRef.removeEventListener(mListener);
         mTrips.clear();
-        mQuery.addChildEventListener(mSearchListener);
+        mTripRef.addChildEventListener(mSearchListener);
     }
 
     @Override
@@ -117,6 +118,44 @@ public class TripListAdapter extends RecyclerView.Adapter<TripListAdapter.ViewHo
         mTripRef.child(trip.getKey()).setValue(trip);
     }
 
+    private boolean isExpired(String tripTime) {
+        Calendar currentTime = Calendar.getInstance();
+        int currentYear = currentTime.get(Calendar.YEAR);
+        int currentMonth = currentTime.get(Calendar.MONTH)+1;
+        int currentDay = currentTime.get(Calendar.DAY_OF_MONTH);
+        int currentHour = currentTime.get(Calendar.HOUR_OF_DAY);
+        int currentMinute = currentTime.get(Calendar.MINUTE);
+
+//        Log.d("Current: ", currentDay + "/" + currentMonth + "/" + currentYear + " " + currentHour + ":" + currentMinute);
+//        Log.d("Set: ", tripTime);
+
+        String[] s = tripTime.split(" ");
+        String date = s[0];
+        String[] ddmmyy = date.split("/");
+        int day = Integer.parseInt(ddmmyy[0]);
+        int month = Integer.parseInt(ddmmyy[1]);
+        int year = Integer.parseInt(ddmmyy[2]);
+
+        String time = s[1];
+        String[] hhmm = time.split(":");
+        int hour = Integer.parseInt(hhmm[0]);
+        int min = Integer.parseInt(hhmm[1]);
+
+        if(year>= currentYear){
+            if(month >= currentMonth){
+                if(day >= currentDay){
+                    return  false;
+                }else{
+                    return true;
+                }
+            }else{
+                return true;
+            }
+        }else{
+            return  true;
+        }
+    }
+
 
     class TripsChildEventListner implements ChildEventListener {
 
@@ -124,7 +163,9 @@ public class TripListAdapter extends RecyclerView.Adapter<TripListAdapter.ViewHo
         public void onChildAdded(DataSnapshot dataSnapshot, String s) {
             Trip trip = dataSnapshot.getValue(Trip.class);
             trip.setKey(dataSnapshot.getKey());
-            mTrips.add(0, trip);
+            if (!isExpired(trip.getTime())) {
+                mTrips.add(0, trip);
+            }
             notifyDataSetChanged();
         }
 
@@ -165,18 +206,22 @@ public class TripListAdapter extends RecyclerView.Adapter<TripListAdapter.ViewHo
 
     class SearchTripsChildEventListner implements ChildEventListener {
         String dest;
+        String origin;
 
-        public SearchTripsChildEventListner(String dest) {
-            this.dest = dest;
+        public SearchTripsChildEventListner(String origin, String dest) {
+            this.origin = origin.toLowerCase();
+            this.dest = dest.toLowerCase();
         }
 
         @Override
         public void onChildAdded(DataSnapshot dataSnapshot, String s) {
             Trip trip = dataSnapshot.getValue(Trip.class);
-            if (trip.getDestination().equals(this.dest)) {
-                trip.setKey(dataSnapshot.getKey());
-                mTrips.add(0, trip);
-                notifyDataSetChanged();
+            if (!isExpired(trip.getTime())) {
+                if (trip.getDestination().toLowerCase().contains(this.dest) || trip.getOrigin().toLowerCase().contains(this.origin)) {
+                    trip.setKey(dataSnapshot.getKey());
+                    mTrips.add(0, trip);
+                    notifyDataSetChanged();
+                }
             }
         }
 

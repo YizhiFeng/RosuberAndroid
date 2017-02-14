@@ -143,13 +143,15 @@
             android:layout_height="wrap_content"
             android:text="@string/select_a_date"
             android:textAllCaps="false"
-            android:textSize="12sp"
-            android:background="@color/colorPrimary"
-            android:textColor="#fff"
+            android:textSize="14sp"
+            android:layout_marginStart="20dp"
+            android:background="?attr/colorAccent"
+            android:textColor="@android:color/white"
             android:layout_alignParentTop="true"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
-            android:elevation="5dp" />
+            android:elevation="7dp"
+            style="@style/Widget.AppCompat.Button" />
 
         <Button
             android:id="@+id/timeButton"
@@ -157,15 +159,14 @@
             android:layout_height="wrap_content"
             android:text="@string/select_a_time"
             android:textAllCaps="false"
-            android:textSize="12sp"
-            android:background="@color/colorPrimary"
-            android:textColor="#fff"
-            android:layout_marginLeft="21dp"
-            android:layout_marginStart="21dp"
+            android:textSize="14sp"
+            android:background="?attr/colorAccent"
+            android:textColor="@android:color/white"
+            android:layout_marginStart="50dp"
             android:layout_alignParentTop="true"
             android:layout_toRightOf="@+id/dateButton"
-            android:layout_toEndOf="@+id/dateButton"
-            android:elevation="5dp" />
+            android:elevation="5dp"
+            style="@style/Widget.AppCompat.Button.Borderless" />
 
 
     </RelativeLayout>
@@ -182,6 +183,7 @@
             fontPath="fonts/Philosopher-Bold.ttf"
             android:textAppearance="@style/TextAppearance.AppCompat.Body1"
             android:layout_alignParentTop="true"
+            android:layout_marginStart="23dp"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true" />
 
@@ -191,8 +193,8 @@
             android:layout_height="wrap_content"
             fontPath="fonts/Philosopher-Bold.ttf"
             android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-            android:layout_marginLeft="14dp"
-            android:layout_marginStart="14dp"
+
+            android:layout_marginStart="70dp"
             android:layout_alignParentTop="true"
             android:layout_toRightOf="@+id/dateTextView"
             android:layout_toEndOf="@+id/dateTextView" />
@@ -221,15 +223,13 @@
             android:textSize="16sp"
 
             android:layout_alignParentTop="true"
-            android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true"
-            android:layout_marginRight="15dp"
             android:layout_marginEnd="15dp" />
 
     </RelativeLayout>
 
     <SeekBar
-        android:layout_marginTop="15dp"
+        android:layout_marginTop="20dp"
         android:id="@+id/seek_bar"
         style="@style/Widget.AppCompat.SeekBar.Discrete"
         android:layout_width="match_parent"
@@ -263,54 +263,54 @@
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:layout_marginTop="15dp">
 
 
         <Button
-            android:text="CANCEL"
+            android:text="@string/button_cancel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignBottom="@+id/insert_trip_button"
             android:layout_toLeftOf="@+id/insert_trip_button"
             android:layout_toStartOf="@+id/insert_trip_button"
-            android:layout_marginRight="10dp"
             android:layout_marginEnd="10dp"
             android:id="@+id/cancel_insert_trip_button"
             fontPath="fonts/Philosopher-Bold.ttf"
-            style="@style/Widget.AppCompat.Button.Borderless"
-            android:textSize="16sp" />
+            style="@android:style/Widget.Material.Button.Borderless"
+            android:textSize="16sp"
+            android:background="@android:color/transparent"
+            android:elevation="6dp"
+            android:textColor="@android:color/black" />
 
         <Button
-            android:text="LEAVE TRIP"
+            android:text="@string/button_add"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignBottom="@+id/cancel_insert_trip_button"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
+            android:id="@+id/insert_trip_button"
+            style="@android:style/Widget.Material.Button.Borderless"
+            android:textColor="?attr/colorPrimary"
+            fontPath="fonts/Philosopher-Bold.ttf"
+            android:textSize="16sp"
+            android:background="@android:color/transparent"
+            android:elevation="8dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true" />
+
+        <Button
+            android:text="@string/button_leave_trip"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:id="@+id/leave_trip_button"
-            style="@style/Widget.AppCompat.Button.Borderless"
-            android:textColor="@color/colorPrimary"
+            android:textColor="?attr/colorPrimary"
             android:textSize="16sp"
             fontPath="fonts/Philosopher-Bold.ttf"
             android:visibility="visible"
             android:background="@android:color/transparent"
-            android:elevation="2dp" />
-
-        <Button
-            android:text="ADD"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/insert_trip_button"
-            style="@style/Widget.AppCompat.Button.Borderless"
-            android:textColor="@color/colorPrimary"
-            fontPath="fonts/Philosopher-Bold.ttf"
-            android:textSize="16sp"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentRight="true"
+            android:elevation="6dp"
+            android:layout_below="@+id/insert_trip_button"
             android:layout_alignParentEnd="true"
-            android:background="@android:color/transparent"
-            android:elevation="5dp" />
+            style="@android:style/Widget.Material.Light.Button.Borderless" />
     </RelativeLayout>
 
 

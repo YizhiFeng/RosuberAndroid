@@ -1,5 +1,6 @@
 package edu.rosehulman.wangf.fengy2.rosuber.fragments;
 
+import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
@@ -7,6 +8,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -21,6 +23,7 @@ import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.TimePicker;
+import android.widget.Toast;
 
 import java.text.DecimalFormat;
 import java.util.Calendar;
@@ -55,14 +58,14 @@ public class InsertTripFragment extends Fragment {
         currentUserKey = getArguments().getString(Constants.USER);
     }
 
-    private void switchToMap(boolean isSettingOrigin){
+    private void switchToMap(boolean isSettingOrigin) {
         FragmentTransaction ft = getActivity().getSupportFragmentManager().beginTransaction();
         MapFragment fragment = new MapFragment();
         Bundle args = new Bundle();
-        args.putString(Constants.USER,currentUserKey);
+        args.putString(Constants.USER, currentUserKey);
         args.putBoolean(Constants.EDIT, isEdit);
-        args.putParcelable(Constants.TRIP,trip);
-        args.putBoolean(Constants.ISSETTINGORIGIN,isSettingOrigin);
+        args.putParcelable(Constants.TRIP, trip);
+        args.putBoolean(Constants.ISSETTINGORIGIN, isSettingOrigin);
         fragment.setArguments(args);
         ft.replace(R.id.fragment_container, fragment);
         ft.addToBackStack("map");
@@ -117,7 +120,7 @@ public class InsertTripFragment extends Fragment {
             }
         });
 
-        if(!isEdit && trip!=null){
+        if (!isEdit && trip != null) {
             originEditText.setText(trip.getOrigin());
             destEditText.setText(trip.getDestination());
         }
@@ -164,6 +167,8 @@ public class InsertTripFragment extends Fragment {
             });
 
         }
+
+
         isDriverSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView,
@@ -175,6 +180,12 @@ public class InsertTripFragment extends Fragment {
                 }
             }
         });
+
+        if (isEdit) {
+            isDriverSwitch.setEnabled(false);
+        } else {
+            isDriverSwitch.setEnabled(true);
+        }
 
         dateButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -228,6 +239,7 @@ public class InsertTripFragment extends Fragment {
             }
         });
 
+        final Activity thisAcitivy = getActivity();
 
         insertButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -238,7 +250,11 @@ public class InsertTripFragment extends Fragment {
                 String time = dateTextView.getText().toString() + " " + timeTextView.getText().toString();
                 Long price = Long.parseLong(priceEditText.getText().toString());
                 long capacity = numPassengerSBar.getProgress();
-                mCallback.insertTripPressed(trip, isEdit, origin, destination, time, price, capacity, isDriverChecked);
+                if (isExpired(time)) {
+                    Toast.makeText(thisAcitivy, "Your trip can not be earlier than now", Toast.LENGTH_LONG).show();
+                } else {
+                    mCallback.insertTripPressed(trip, isEdit, origin, destination, time, price, capacity, isDriverChecked);
+                }
             }
         });
 
@@ -258,6 +274,7 @@ public class InsertTripFragment extends Fragment {
         super.onPrepareOptionsMenu(menu);
         menu.findItem(R.id.action_map_search).setVisible(false);
         menu.findItem(R.id.action_search).setVisible(false);
+        menu.findItem(R.id.action_map_ok).setVisible(false);
     }
 
 
@@ -276,6 +293,44 @@ public class InsertTripFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
         mCallback = null;
+    }
+
+    private boolean isExpired(String tripTime) {
+        Calendar currentTime = Calendar.getInstance();
+        int currentYear = currentTime.get(Calendar.YEAR);
+        int currentMonth = currentTime.get(Calendar.MONTH)+1;
+        int currentDay = currentTime.get(Calendar.DAY_OF_MONTH);
+        int currentHour = currentTime.get(Calendar.HOUR_OF_DAY);
+        int currentMinute = currentTime.get(Calendar.MINUTE);
+
+        Log.d("Current: ", currentDay + "/" + currentMonth + "/" + currentYear + " " + currentHour + ":" + currentMinute);
+        Log.d("Set: ", tripTime);
+
+        String[] s = tripTime.split(" ");
+        String date = s[0];
+        String[] ddmmyy = date.split("/");
+        int day = Integer.parseInt(ddmmyy[0]);
+        int month = Integer.parseInt(ddmmyy[1]);
+        int year = Integer.parseInt(ddmmyy[2]);
+
+        String time = s[1];
+        String[] hhmm = time.split(":");
+        int hour = Integer.parseInt(hhmm[0]);
+        int min = Integer.parseInt(hhmm[1]);
+
+        if(year>= currentYear){
+            if(month >= currentMonth){
+                if(day >= currentDay){
+                    return  false;
+                }else{
+                    return true;
+                }
+            }else{
+                return true;
+            }
+        }else{
+            return  true;
+        }
     }
 
 

@@ -23,7 +23,7 @@
     <string name="from_hint">I want to be picked up at</string>
     <string name="to">To:</string>
     <string name="to_hint">I am going to</string>
-    <string name="select_a_date">Select A Date</string>
+    <string name="select_a_date">Select A Date\n(DDMMYY)</string>
     <string name="select_a_time">Select A Time</string>
     <string name="capacity">Capacity (Number of passengers): </string>
     <string name="suggested_price">Suggested Price Per Passenger ($)</string>
@@ -77,4 +77,10 @@
     <string name="button_text_update">UPDATE</string>
     <string name="title_activity_maps">Map</string>
     <string name="dialog_get_place_name_title">Search</string>
+    <string name="leave_trip_dialog_msg">Are You Sure To Leave This Trip?</string>
+    <string name="leave_trip_dialog_title">Leave Trip</string>
+    <string name="yes">YES</string>
+    <string name="button_add">ADD</string>
+    <string name="button_leave_trip">LEAVE TRIP</string>
+    <string name="button_cancel">CANCEL</string>
 </resources>
