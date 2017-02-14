@@ -79,7 +79,7 @@ public class MyTripContactFragment extends Fragment {
         (rootView.findViewById(R.id.driver_email_button)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mListener.onEmail(driverEmailTextView.getText().toString());
+                mListener.onEmail(driverEmailTextView.getText().toString(), false);
             }
         });
         return rootView;
@@ -133,6 +133,6 @@ public class MyTripContactFragment extends Fragment {
     public interface OnContactListener {
         void onMessage(String receiver);
 
-        void onEmail(String receiver);
+        void onEmail(String receiver, boolean toDevelopers);
     }
 }

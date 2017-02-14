@@ -53,7 +53,7 @@ public class MyTripContactAdapter extends RecyclerView.Adapter<MyTripContactAdap
         holder.emailIB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mListener.onEmail(holder.email.getText().toString());
+                mListener.onEmail(holder.email.getText().toString(),false);
             }
         });
     }

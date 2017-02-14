@@ -1,5 +1,7 @@
 package edu.rosehulman.wangf.fengy2.rosuber.fragments;
 
+import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
@@ -8,6 +10,7 @@ import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 
+import edu.rosehulman.wangf.fengy2.rosuber.MainActivity;
 import edu.rosehulman.wangf.fengy2.rosuber.R;
 
 /**
@@ -15,9 +18,9 @@ import edu.rosehulman.wangf.fengy2.rosuber.R;
  */
 
 public class AboutFragment extends Fragment {
+    private AboutCallback mCallback;
 
     public AboutFragment() {
-        // Required empty public constructor
     }
 
     @Override
@@ -34,6 +37,34 @@ public class AboutFragment extends Fragment {
                              Bundle savedInstanceState) {
         ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle("Rosuber");
         getActivity().findViewById(R.id.fab).setVisibility(View.GONE);
-        return inflater.inflate(R.layout.fragment_about, container, false);
+        View view = inflater.inflate(R.layout.fragment_about, container, false);
+        (view.findViewById(R.id.about_IB)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mCallback.onEmailToDevelopers();
+            }
+        });
+        return view;
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof AboutFragment.AboutCallback) {
+            mCallback = (AboutFragment.AboutCallback) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement AboutCallback");
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mCallback = null;
+    }
+
+    public interface AboutCallback {
+        void onEmailToDevelopers();
     }
 }

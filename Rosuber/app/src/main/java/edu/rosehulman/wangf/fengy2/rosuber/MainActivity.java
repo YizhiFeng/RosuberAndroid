@@ -93,7 +93,8 @@ import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, TripHistoryFragment.TripHistoryCallback,
         TripListFragment.TripListCallback, LoginFragment.OnLoginListener, TripDetailFragment.OnJoinListener,
-        ProfileFragment.ProfileUpdateListener, MyTripContactFragment.OnContactListener, InsertTripFragment.InsertTripCallBack {
+        ProfileFragment.ProfileUpdateListener, MyTripContactFragment.OnContactListener,
+        InsertTripFragment.InsertTripCallBack, AboutFragment.AboutCallback {
 
     private final static String PREFS = "PREFS";
     private static final int RC_ROSEFIRE_LOGIN = 1;
@@ -138,7 +139,7 @@ public class MainActivity extends AppCompatActivity
         mFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                switchToInsertTripFragment(false,null);
+                switchToInsertTripFragment(false, null);
             }
         });
 
@@ -175,13 +176,13 @@ public class MainActivity extends AppCompatActivity
 
     }
 
-    private void switchToInsertTripFragment(boolean isEdit,Trip trip) {
+    private void switchToInsertTripFragment(boolean isEdit, Trip trip) {
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         InsertTripFragment fragment = new InsertTripFragment();
         Bundle args = new Bundle();
-        args.putString(Constants.USER,currentUser.getKey());
-        args.putBoolean(Constants.EDIT,isEdit);
-        args.putParcelable(Constants.TRIP,trip);
+        args.putString(Constants.USER, currentUser.getKey());
+        args.putBoolean(Constants.EDIT, isEdit);
+        args.putParcelable(Constants.TRIP, trip);
         fragment.setArguments(args);
 
         Slide slideTransition = new Slide(Gravity.RIGHT);
@@ -219,9 +220,9 @@ public class MainActivity extends AppCompatActivity
     public void joinTripConfirmDialog(final Trip trip) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(R.string.join_trip_dialog_title);
-        if((trip.getDriverKey()!=null &&trip.getDriverKey().equals(currentUser.getKey())) || (trip.getPassengerKey()!=null && trip.getPassengerKey().containsKey(currentUser.getKey()))){
+        if ((trip.getDriverKey() != null && trip.getDriverKey().equals(currentUser.getKey())) || (trip.getPassengerKey() != null && trip.getPassengerKey().containsKey(currentUser.getKey()))) {
             builder.setTitle("You are already in this trip!");
-            builder.setPositiveButton(android.R.string.ok,null);
+            builder.setPositiveButton(android.R.string.ok, null);
             builder.create().show();
             return;
         }
@@ -671,7 +672,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onEditTripClicked(Trip trip) {
-        switchToInsertTripFragment(true,trip);
+        switchToInsertTripFragment(true, trip);
     }
 
     @Override
@@ -708,16 +709,33 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onEmail(String receiver) {
+    public void onEmail(String receiver, boolean toDevelopers) {
+        email(receiver, toDevelopers);
+    }
+
+    @Override
+    public void onEmailToDevelopers() {
+        email(Constants.EMAIL, true);
+    }
+
+    private void email(String receiver, boolean toDevelopers) {
         Activity activity = this;
         if (receiver == null || receiver.isEmpty() || receiver.equals("N/A")) {
             Toast.makeText(activity, getString(R.string.invalid_email),
                     Toast.LENGTH_LONG).show();
         } else {
             Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
-            emailIntent.setData(Uri.parse("mailto:")); // only email apps should handle this
-            emailIntent.putExtra(Intent.EXTRA_EMAIL, receiver);
-            emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Rosuber Trip");
+            String uriText = "mailto:";
+            if (toDevelopers) {
+                uriText += Uri.encode("wangf@rose-hulman.edu") + "?cc=" +
+                        Uri.encode("fengy2@rose-hulman.edu") +
+                        "&subject=" + Uri.encode(Constants.TAG);
+            } else {
+                uriText += Uri.encode(receiver) +
+                        "?subject=" + Uri.encode(Constants.TAG);
+            }
+            Uri uri = Uri.parse(uriText);
+            emailIntent.setData(uri);
             try {
                 startActivity(emailIntent);
             } catch (ActivityNotFoundException e) {
@@ -727,8 +745,8 @@ public class MainActivity extends AppCompatActivity
 
 
     @Override
-    public void insertTripPressed(Trip trip,boolean isEdit,String origin, String destination, String time, Long price, long capacity, boolean isDriverChecked) {
-        if(isEdit) {
+    public void insertTripPressed(Trip trip, boolean isEdit, String origin, String destination, String time, Long price, long capacity, boolean isDriverChecked) {
+        if (isEdit) {
             trip.setOrigin(origin);
             trip.setDestination(destination);
             trip.setTime(time);
@@ -736,7 +754,7 @@ public class MainActivity extends AppCompatActivity
             trip.setCapacity(capacity);
             mTripHistoryFragment.getAdapter().editTrip(trip);
             switchToHistoryFragment(false);
-        }else {
+        } else {
             Trip newTrip = new Trip();
             if (isDriverChecked) {
                 newTrip.setDriverKey(currentUser.getKey());
@@ -758,7 +776,7 @@ public class MainActivity extends AppCompatActivity
         leaveTripConfirmDialog(trip);
     }
 
-    private void leaveTripConfirmDialog(final Trip trip){
+    private void leaveTripConfirmDialog(final Trip trip) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(R.string.leave_trip_dialog_title);
         builder.setMessage(R.string.leave_trip_dialog_msg);
@@ -769,17 +787,18 @@ public class MainActivity extends AppCompatActivity
                 switchToHistoryFragment(false);
             }
         });
-        builder.setNegativeButton(android.R.string.cancel,null);
+        builder.setNegativeButton(android.R.string.cancel, null);
         builder.create().show();
     }
 
 
     @Override
     public void cancelInsertTripButtonPressed(boolean idEdit) {
-        if(idEdit){
+        if (idEdit) {
             switchToHistoryFragment(false);
-        }else{
-        switchToTripListFragment();}
+        } else {
+            switchToTripListFragment();
+        }
     }
 
     private void switchToTripListFragment() {
@@ -794,6 +813,4 @@ public class MainActivity extends AppCompatActivity
         ft.addToBackStack("trips");
         ft.commit();
     }
-
-
 }
