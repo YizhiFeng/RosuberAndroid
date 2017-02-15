@@ -14,6 +14,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.DatePicker;
@@ -121,8 +122,12 @@ public class InsertTripFragment extends Fragment {
         });
 
         if (!isEdit && trip != null) {
-            originEditText.setText(trip.getOrigin());
-            destEditText.setText(trip.getDestination());
+            if (trip.getOrigin() != null) {
+                originEditText.setText(trip.getOrigin());
+            }
+            if (trip.getDestination() != null) {
+                destEditText.setText(trip.getDestination());
+            }
         }
 
         if (isEdit) {
@@ -247,13 +252,29 @@ public class InsertTripFragment extends Fragment {
                 boolean isDriverChecked = isDriverSwitch.isChecked();
                 String origin = originEditText.getText().toString();
                 String destination = destEditText.getText().toString();
-                String time = dateTextView.getText().toString() + " " + timeTextView.getText().toString();
-                Long price = Long.parseLong(priceEditText.getText().toString());
-                long capacity = numPassengerSBar.getProgress();
-                if (isExpired(time)) {
-                    Toast.makeText(thisAcitivy, "Your trip can not be earlier than now", Toast.LENGTH_LONG).show();
+                String dateText = dateTextView.getText().toString();
+                String timeText = timeTextView.getText().toString();
+                if (dateText.isEmpty() || timeText.isEmpty()) {
+                    Toast.makeText(thisAcitivy, "Please enter both the date and the time", Toast.LENGTH_LONG).show();
                 } else {
-                    mCallback.insertTripPressed(trip, isEdit, origin, destination, time, price, capacity, isDriverChecked);
+                    String time = dateText + " " + timeText;
+                    long capacity = numPassengerSBar.getProgress();
+                    String priceText = priceEditText.getText().toString();
+                    if (priceText.isEmpty()) {
+                        Toast.makeText(thisAcitivy, "Please enter a suggested price, which doesn't have to be the final price of this trip", Toast.LENGTH_LONG).show();
+                    } else {
+                        Long price = Long.parseLong(priceText);
+
+                        if (origin == null || destination == null || time == null || capacity == 0) {
+                            Toast.makeText(thisAcitivy, "Please fill out all the information", Toast.LENGTH_LONG).show();
+                        } else {
+                            if (isExpired(time)) {
+                                Toast.makeText(thisAcitivy, "Your trip can not be earlier than now", Toast.LENGTH_LONG).show();
+                            } else {
+                                mCallback.insertTripPressed(trip, isEdit, origin, destination, time, price, capacity, isDriverChecked);
+                            }
+                        }
+                    }
                 }
             }
         });
@@ -298,7 +319,7 @@ public class InsertTripFragment extends Fragment {
     private boolean isExpired(String tripTime) {
         Calendar currentTime = Calendar.getInstance();
         int currentYear = currentTime.get(Calendar.YEAR);
-        int currentMonth = currentTime.get(Calendar.MONTH)+1;
+        int currentMonth = currentTime.get(Calendar.MONTH) + 1;
         int currentDay = currentTime.get(Calendar.DAY_OF_MONTH);
         int currentHour = currentTime.get(Calendar.HOUR_OF_DAY);
         int currentMinute = currentTime.get(Calendar.MINUTE);
@@ -318,18 +339,18 @@ public class InsertTripFragment extends Fragment {
         int hour = Integer.parseInt(hhmm[0]);
         int min = Integer.parseInt(hhmm[1]);
 
-        if(year>= currentYear){
-            if(month >= currentMonth){
-                if(day >= currentDay){
-                    return  false;
-                }else{
+        if (year >= currentYear) {
+            if (month >= currentMonth) {
+                if (day >= currentDay) {
+                    return false;
+                } else {
                     return true;
                 }
-            }else{
+            } else {
                 return true;
             }
-        }else{
-            return  true;
+        } else {
+            return true;
         }
     }
 

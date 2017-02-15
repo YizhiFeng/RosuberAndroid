@@ -79,7 +79,9 @@ public class TripHistoryAdapter extends RecyclerView.Adapter<TripHistoryAdapter.
         holder.mOriginTextView.setText(trip.getOrigin());
         holder.mPriceTextView.setText(trip.getPrice() + "");
 
+        holder.mDriverTextView.setText("");
         if (trip.getDriverKey() != null) {
+
             mUserRef.child(trip.getDriverKey()).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
@@ -98,6 +100,7 @@ public class TripHistoryAdapter extends RecyclerView.Adapter<TripHistoryAdapter.
         if (trip.getPassengerKey().size() != 0) {
             int count = 0;
             final int size = trip.getPassengerKey().size();
+            holder.mPassengersTextView.setText("");
             for (String key : trip.getPassengerKey().keySet()) {
 
                 final int finalCount = count;
@@ -226,12 +229,15 @@ public class TripHistoryAdapter extends RecyclerView.Adapter<TripHistoryAdapter.
         @Override
         public void onChildRemoved(DataSnapshot dataSnapshot) {
             String key = dataSnapshot.getKey();
+            int count =0;
             for (Trip trip : mTrips) {
                 if (key.equals(trip.getKey())) {
                     mTrips.remove(trip);
+                    notifyItemRemoved(count);
                     notifyDataSetChanged();
                     return;
                 }
+                count++;
             }
         }
 

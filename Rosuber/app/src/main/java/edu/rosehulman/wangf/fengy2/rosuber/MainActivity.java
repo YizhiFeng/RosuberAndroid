@@ -403,9 +403,9 @@ public class MainActivity extends AppCompatActivity
         if (switchTo != null) {
             FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
             ft.replace(R.id.fragment_container, switchTo);
-            for (int i = 0; i < getSupportFragmentManager().getBackStackEntryCount(); i++) {
-                getSupportFragmentManager().popBackStackImmediate();
-            }
+//            for (int i = 0; i < getSupportFragmentManager().getBackStackEntryCount(); i++) {
+//                getSupportFragmentManager().popBackStackImmediate();
+//            }
             ft.addToBackStack(backStack);
             ft.commit();
         }
@@ -701,9 +701,15 @@ public class MainActivity extends AppCompatActivity
             Toast.makeText(activity, getString(R.string.invalid_phone_number),
                     Toast.LENGTH_LONG).show();
         } else {
-            Intent smsIntent = new Intent(Intent.ACTION_VIEW);
+//            Intent smsIntent = new Intent(Intent.ACTION_SEND);
+////            smsIntent.setType("vnd.android-dir/mms-sms");
+////            smsIntent.putExtra("address", receiver);
+//            smsIntent.setData(Uri.parse("smsto:"+receiver));
+//            startActivity(smsIntent);
+            Intent smsIntent = new Intent(Intent.ACTION_SENDTO);
+            smsIntent.addCategory(Intent.CATEGORY_DEFAULT);
             smsIntent.setType("vnd.android-dir/mms-sms");
-            smsIntent.putExtra("address", receiver);
+            smsIntent.setData(Uri.parse("sms:" + receiver));
             startActivity(smsIntent);
         }
     }
@@ -807,9 +813,9 @@ public class MainActivity extends AppCompatActivity
 //        slideTransition.setDuration(200);
 //        mTripHistoryFragment.setEnterTransition(slideTransition);
         ft.replace(R.id.fragment_container, mTripListFragment);
-        for (int i = 0; i < getSupportFragmentManager().getBackStackEntryCount(); i++) {
-            getSupportFragmentManager().popBackStackImmediate();
-        }
+//        for (int i = 0; i < getSupportFragmentManager().getBackStackEntryCount(); i++) {
+//            getSupportFragmentManager().popBackStackImmediate();
+//        }
         ft.addToBackStack("trips");
         ft.commit();
     }
