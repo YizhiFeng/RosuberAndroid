@@ -140,8 +140,10 @@ public class InsertTripFragment extends Fragment {
 
             if (isDriver) {
                 isDriverTextView.setText(R.string.i_am_a_driver);
+                numPassengerSBar.setEnabled(true);
             } else {
                 isDriverTextView.setText(R.string.i_am_a_passenger);
+                numPassengerSBar.setEnabled(false);
             }
             String[] timeArray = trip.getTime().split(" ");
             isDriverSwitch.setChecked(isDriver);
