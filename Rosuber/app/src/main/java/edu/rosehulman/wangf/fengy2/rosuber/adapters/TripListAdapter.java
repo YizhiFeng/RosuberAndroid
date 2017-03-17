@@ -41,6 +41,7 @@ public class TripListAdapter extends RecyclerView.Adapter<TripListAdapter.ViewHo
     private DatabaseReference mTripRef;
     private TripsChildEventListner mListener;
     private SearchTripsChildEventListner mSearchListener;
+    private boolean isShowAll;
 
     public TripListAdapter(Context context, TripListFragment.TripListCallback callback) {
         mContext = context;
@@ -49,21 +50,28 @@ public class TripListAdapter extends RecyclerView.Adapter<TripListAdapter.ViewHo
         mListener = new TripsChildEventListner();
         mTripRef.addChildEventListener(mListener);
         mTripRef.keepSynced(true);
+        isShowAll = true;
     }
 
     public void toggle(String from, String to) {
         if (from != null) {
             mSearchListener = new SearchTripsChildEventListner(from, to);
-        }
-        if (from == null) {
-            mTripRef.removeEventListener(mSearchListener);
-            mTrips.clear();
-            mTripRef.addChildEventListener(mListener);
+            toggleListener(mListener, mSearchListener);
+            isShowAll = false;
             return;
         }
-        mTripRef.removeEventListener(mListener);
+        if (from == null && !isShowAll) {
+            toggleListener(mSearchListener, mListener);
+            isShowAll = true;
+            return;
+        }
+
+    }
+
+    public void toggleListener(ChildEventListener toRemove, ChildEventListener toAdd){
+        mTripRef.removeEventListener(toRemove);
         mTrips.clear();
-        mTripRef.addChildEventListener(mSearchListener);
+        mTripRef.addChildEventListener(toAdd);
     }
 
     @Override
